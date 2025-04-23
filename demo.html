@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的创意个人网站</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            padding: 50px 0;
+            text-align: center;
+            color: white;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        nav {
+            margin-top: 20px;
+        }
+
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #ffdf00;
+        }
+
+        section {
+            max-width: 800px;
+            padding: 40px;
+            margin: 20px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            animation: slideUp 1.5s ease-in-out;
+        }
+
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            background-color: #2575fc;
+            color: white;
+            margin-top: auto;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes slideUp {
+            from {transform: translateY(50px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            margin-top: -75px;
+            object-fit: cover;
+        }
+
+        h1 {
+            margin-top: 15px;
+        }
+
+        .bio {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .contact-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 25px;
+            background-color: #6a11cb;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: transform 0.3s;
+        }
+
+        .contact-btn:hover {
+            transform: scale(1.1);
+            background-color: #2575fc;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="https://via.placeholder.com/150" alt="个人头像" class="profile-img">
+    <h1>欢迎来到我的创意世界！</h1>
+    <nav>
+        <a href="#about">关于我</a>
+        <a href="#projects">项目展示</a>
+        <a href="#contact">联系我</a>
+    </nav>
+</header>
+
+<section id="about">
+    <h2>关于我</h2>
+    <p class="bio">
+        我是一名充满热情的开发者，喜欢创造富有创意和实用价值的作品。我喜欢探索新技术，并将想法转化为现实。
+    </p>
+</section>
+
+<section id="projects">
+    <h2>项目展示</h2>
+    <ul>
+        <li>项目一：创意视觉效果网站</li>
+        <li>项目二：互动式网页小游戏</li>
+        <li>项目三：数据可视化平台</li>
+    </ul>
+</section>
+
+<section id="contact">
+    <h2>联系我</h2>
+    <p>邮箱：example@mail.com</p>
+    <p>电话：123-456-7890</p>
+    <a href="mailto:example@mail.com" class="contact-btn">立即联系</a>
+</section>
+
+<footer>
+    &copy; 2025 我的创意网站
+</footer>
+
+</body>
+</html>
