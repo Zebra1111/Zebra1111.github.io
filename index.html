@@ -2,148 +2,143 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的创意个人网站</title>
+    <title>创意个人创业网站 - 黄金矿工风格</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f8ff;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            background-color: #121212;
         }
-
-        header {
-            width: 100%;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            padding: 50px 0;
+        canvas {
+            display: block;
+            background: linear-gradient(#2980b9, #6dd5fa, #ffffff);
+        }
+        .overlay {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
             text-align: center;
-            color: white;
-            animation: fadeIn 2s ease-in-out;
-        }
-
-        nav {
-            margin-top: 20px;
-        }
-
-        nav a {
-            margin: 0 15px;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-
-        nav a:hover {
-            color: #ffdf00;
-        }
-
-        section {
-            max-width: 800px;
-            padding: 40px;
-            margin: 20px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            animation: slideUp 1.5s ease-in-out;
-        }
-
-        footer {
-            width: 100%;
-            text-align: center;
-            padding: 20px;
-            background-color: #2575fc;
-            color: white;
-            margin-top: auto;
-        }
-
-        @keyframes fadeIn {
-            from {opacity: 0;}
-            to {opacity: 1;}
-        }
-
-        @keyframes slideUp {
-            from {transform: translateY(50px); opacity: 0;}
-            to {transform: translateY(0); opacity: 1;}
-        }
-
-        .profile-img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 5px solid #fff;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-            margin-top: -75px;
-            object-fit: cover;
-        }
-
-        h1 {
-            margin-top: 15px;
-        }
-
-        .bio {
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        .contact-btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 25px;
-            background-color: #6a11cb;
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            transition: transform 0.3s;
-        }
-
-        .contact-btn:hover {
-            transform: scale(1.1);
-            background-color: #2575fc;
+            color: #fff;
+            font-size: 24px;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
+<div class="overlay">🎣 点击矿物开始挖掘！</div>
+<canvas id="gameCanvas"></canvas>
 
-<header>
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5D0NfD4ujraHuPrlYUKQNxHwIe_v_9i3xFdBPS2QYCnh0SLQv0eHi7Bp9QLEn8kecXvk&usqp=CAU" alt="个人头像" class="profile-img">
-    <h1>欢迎来到我的创意世界！</h1>
-    <nav>
-        <a href="#about">关于我</a>
-        <a href="#projects">项目展示</a>
-        <a href="#contact">联系我</a>
-    </nav>
-</header>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-<section id="about">
-    <h2>关于我</h2>
-    <p class="bio">
-        我是一名充满热情的开发者，喜欢创造富有创意和实用价值的作品。我喜欢探索新技术，并将想法转化为现实。
-    </p>
-</section>
+const hook = { x: canvas.width / 2, y: 0, length: 50, speed: 3, angle: 0, dir: 1, caught: null };
+const items = [
+    {x: 200, y: 400, type: 'gold', color: '#FFD700', radius: 25},
+    {x: 400, y: 550, type: 'diamond', color: '#00FFFF', radius: 20},
+    {x: 600, y: 450, type: 'intro', color: '#FF6347', radius: 30, label: '个人介绍'},
+    {x: 800, y: 500, type: 'projects', color: '#32CD32', radius: 30, label: '项目介绍'},
+    {x: 1000, y: 420, type: 'rock', color: '#808080', radius: 25},
+];
 
-<section id="projects">
-    <h2>项目展示</h2>
-    <ul>
-        <li>项目一：创意视觉效果网站</li>
-        <li>项目二：互动式网页小游戏</li>
-        <li>项目三：数据可视化平台</li>
-    </ul>
-</section>
+function drawHook() {
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 3;
+    const hookX = hook.x + hook.length * Math.cos(hook.angle);
+    const hookY = hook.y + hook.length * Math.sin(hook.angle);
+    ctx.beginPath();
+    ctx.moveTo(hook.x, hook.y);
+    ctx.lineTo(hookX, hookY);
+    ctx.stroke();
 
-<section id="contact">
-    <h2>联系我</h2>
-    <p>邮箱：example@mail.com</p>
-    <p>电话：123-456-7890</p>
-    <a href="mailto:example@mail.com" class="contact-btn">立即联系</a>
-</section>
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(hookX, hookY, 8, 0, Math.PI * 2);
+    ctx.fill();
 
-<footer>
-    &copy; 2025 我的创意网站
-</footer>
+    return {x: hookX, y: hookY};
+}
 
+function drawItems() {
+    items.forEach(item => {
+        ctx.fillStyle = item.color;
+        ctx.beginPath();
+        ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        if (item.label) {
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(item.label, item.x, item.y + 5);
+        }
+    });
+}
+
+function updateHook() {
+    hook.angle += hook.dir * 0.01;
+    if (hook.angle > 0.8 || hook.angle < -0.8) hook.dir *= -1;
+}
+
+function detectCollision(hookPos) {
+    for (const item of items) {
+        const dx = hookPos.x - item.x;
+        const dy = hookPos.y - item.y;
+        if (Math.sqrt(dx*dx + dy*dy) < item.radius + 8) {
+            return item;
+        }
+    }
+    return null;
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawItems();
+    const hookPos = drawHook();
+    updateHook();
+
+    if (hook.caught) {
+        hook.caught.x = hookPos.x;
+        hook.caught.y = hookPos.y;
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+canvas.addEventListener('click', () => {
+    if (!hook.caught) {
+        const hookPos = {
+            x: hook.x + hook.length * Math.cos(hook.angle),
+            y: hook.y + hook.length * Math.sin(hook.angle)
+        };
+        const item = detectCollision(hookPos);
+        if (item) {
+            hook.caught = item;
+            setTimeout(() => {
+                if (item.type === 'intro') {
+                    window.location.href = 'intro.html';
+                } else if (item.type === 'projects') {
+                    window.location.href = 'projects.html';
+                } else {
+                    alert(`你钓到了${item.type === 'gold' ? '黄金' : item.type === 'diamond' ? '钻石' : '普通石头'}!`);
+                    hook.caught = null;
+                }
+            }, 800);
+        }
+    }
+});
+
+gameLoop();
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
 </body>
 </html>
