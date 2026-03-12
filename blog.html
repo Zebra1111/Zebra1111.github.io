@@ -665,6 +665,13 @@
             color: #ff6464;
         }
 
+        /* 草稿标签 */
+        .draft-tag {
+            background: rgba(255, 165, 0, 0.15) !important;
+            color: rgba(255, 165, 0, 0.9) !important;
+            border-color: rgba(255, 165, 0, 0.3) !important;
+        }
+
         /* 详情页编辑按钮 */
         .detail-edit-btn {
             display: inline-flex;
@@ -694,6 +701,192 @@
             font-size: 13px;
             border-top: 1px solid rgba(255, 215, 0, 0.05);
             margin-top: 50px;
+        }
+
+        /* ===== Token 配置弹窗 ===== */
+        .token-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+        }
+
+        .token-modal.visible {
+            display: flex;
+        }
+
+        .token-box {
+            background: linear-gradient(135deg, #1a0a2e 0%, #0d0521 100%);
+            border: 2px solid #ffd700;
+            border-radius: 16px;
+            padding: 30px 36px;
+            width: 480px;
+            max-width: 92%;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.15);
+        }
+
+        .token-box h3 {
+            color: #ffd700;
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .token-box .token-hint {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .token-box .token-hint a {
+            color: #ffd700;
+            text-decoration: underline;
+        }
+
+        .token-box input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            color: #ffd700;
+            font-size: 14px;
+            font-family: 'Consolas', monospace;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .token-box input[type="text"]:focus {
+            border-color: #ffd700;
+        }
+
+        .token-box .token-status {
+            font-size: 12px;
+            margin-top: 8px;
+            min-height: 18px;
+        }
+
+        .token-box .token-status.ok {
+            color: #4caf50;
+        }
+
+        .token-box .token-status.err {
+            color: #ff4444;
+        }
+
+        .token-box .token-btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            justify-content: flex-end;
+        }
+
+        .token-box .token-btn-row button {
+            padding: 9px 22px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .token-box .btn-token-save {
+            background: #ffd700;
+            color: #1a0a2e;
+        }
+
+        .token-box .btn-token-save:hover {
+            background: #ffed4a;
+        }
+
+        .token-box .btn-token-clear {
+            background: rgba(255, 60, 60, 0.2);
+            color: #ff6464;
+        }
+
+        .token-box .btn-token-clear:hover {
+            background: rgba(255, 60, 60, 0.35);
+        }
+
+        .token-box .btn-token-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+
+        .token-box .btn-token-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 编辑器顶栏按钮组 */
+        .editor-topbar .editor-btn-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .editor-topbar .btn-save-draft {
+            padding: 9px 22px;
+            border: 1.5px solid rgba(255, 215, 0, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            background: transparent;
+            color: #ffd700;
+            transition: all 0.2s;
+        }
+
+        .editor-topbar .btn-save-draft:hover {
+            background: rgba(255, 215, 0, 0.12);
+            border-color: #ffd700;
+        }
+
+        .editor-topbar .btn-publish-repo {
+            padding: 9px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            background: #ffd700;
+            color: #1a0a2e;
+            transition: all 0.2s;
+        }
+
+        .editor-topbar .btn-publish-repo:hover {
+            background: #ffed4a;
+            transform: scale(1.03);
+        }
+
+        .editor-topbar .btn-publish-repo:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 导航栏 Token 配置按钮 */
+        .navbar .token-config-btn {
+            color: rgba(255, 215, 0, 0.6);
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            background: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .navbar .token-config-btn:hover {
+            color: #ffd700;
+            border-color: rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.08);
         }
 
         /* ===== 响应式 ===== */
@@ -861,6 +1054,7 @@
                 <span class="status-dot" id="authDot"></span>
                 <span class="status-text" id="authText">未认证</span>
             </div>
+            <button class="token-config-btn" id="tokenConfigBtn" title="配置 GitHub Token">🔑 Token</button>
             <a href="index.html" class="back-btn">返回矿工</a>
         </div>
     </nav>
@@ -913,7 +1107,10 @@
                 <button class="editor-close" id="editorCancel" title="关闭">✕</button>
                 <h2 id="editorHeading">✍️ 写文章</h2>
             </div>
-            <button class="btn-publish" id="editorPublish">发布文章</button>
+            <div class="editor-btn-group">
+                <button class="btn-save-draft" id="editorSaveDraft">💾 保存草稿</button>
+                <button class="btn-publish-repo" id="editorPublishRepo">🚀 发布到仓库</button>
+            </div>
         </div>
         <div class="editor-body">
             <div class="editor-inner">
@@ -933,6 +1130,26 @@
 
 支持 Markdown：## 标题  **粗体**  `代码`  > 引用  - 列表"></textarea>
                 <div class="format-hint">Markdown: ## 标题 · **粗体** · `代码` · ```代码块``` · > 引用 · - 列表 · [链接](url)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token 配置弹窗 -->
+    <div class="token-modal" id="tokenModal">
+        <div class="token-box">
+            <h3>🔑 GitHub Token 配置</h3>
+            <p class="token-hint">
+                发布文章到仓库需要 GitHub Personal Access Token (classic)。<br>
+                前往 <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Tokens</a> 创建，需勾选
+                <b>repo</b> 权限。<br>
+                Token 仅保存在您的浏览器本地，不会上传。
+            </p>
+            <input type="text" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+            <div class="token-status" id="tokenStatus"></div>
+            <div class="token-btn-row">
+                <button class="btn-token-clear" id="tokenClear">清除</button>
+                <button class="btn-token-cancel" id="tokenCancel">取消</button>
+                <button class="btn-token-save" id="tokenSave">保存</button>
             </div>
         </div>
     </div>
@@ -1092,52 +1309,247 @@
             });
         }
 
-        // ============ 博客数据管理 (localStorage) ============
-        const STORAGE_KEY = 'zebra_blog_posts';
+        // ============ GitHub API 发布模块 ============
+        const GITHUB_OWNER = 'Zebra1111';
+        const GITHUB_REPO = 'Zebra1111.github.io';
+        const GITHUB_BRANCH = 'main';
+        const TOKEN_KEY = 'zebra_github_token';
 
-        // 预置的示例文章
-        const DEFAULT_POSTS = [
-            {
-                id: 1,
-                title: '欢迎来到我的博客 👋',
-                tag: '日常',
-                summary: '这是我的第一篇博客，用来记录学习与生活中的点滴。',
-                content: `## 你好，世界！\n\n欢迎来到 **Zebra's Blog** 🎉\n\n这是一个基于黄金矿工主页的博客系统，你可以在这里：\n\n- 📝 记录技术笔记\n- 💡 分享学习心得\n- 🎯 追踪项目进展\n\n### 如何使用\n\n点击右下角的 ✏️ 按钮即可开始写文章，支持简单的 Markdown 语法。\n\n> 好记性不如烂笔头\n\n文章数据存储在浏览器的 \`localStorage\` 中，刷新页面不会丢失。\n\n### 示例代码\n\n\`\`\`javascript\nconsole.log('Hello, Zebra Blog!');\n\`\`\`\n\n希望你能喜欢这个小博客！`,
-                date: '2026-03-12',
-                timestamp: Date.now()
-            },
-            {
-                id: 2,
-                title: '用 Canvas 实现黄金矿工游戏',
-                tag: '技术',
-                summary: '分享如何使用 HTML5 Canvas 从零开始实现一个黄金矿工小游戏。',
-                content: `## 项目介绍\n\n黄金矿工是一个经典的 4399 小游戏，这次我用纯前端技术把它复刻了出来，作为我的 GitHub 主页。\n\n### 技术栈\n\n- **HTML5 Canvas** — 游戏渲染\n- **原生 JavaScript** — 游戏逻辑\n- **CSS3** — UI 界面\n\n### 核心逻辑\n\n游戏主要分为以下几个模块：\n\n1. **钩爪摆动** — 使用三角函数控制角度\n2. **碰撞检测** — 计算钩爪与物品的距离\n3. **状态机** — swinging / extending / retracting\n\n\`\`\`javascript\n// 钩爪位置计算\nminer.hookX = miner.x + Math.sin(miner.angle) * miner.ropeLen;\nminer.hookY = miner.y + Math.cos(miner.angle) * miner.ropeLen;\n\`\`\`\n\n### 粒子效果\n\n抓到物品时会触发金色粒子爆炸效果，增加游戏的视觉反馈。\n\n> 用简单的数学就能创造有趣的游戏体验`,
-                date: '2026-03-12',
-                timestamp: Date.now() - 1000
-            },
-            {
-                id: 3,
-                title: '前端密钥认证系统设计与实现 🔐',
-                tag: '技术',
-                summary: '深入解析如何在纯前端项目中实现安全的密钥验证系统，涵盖 SHA-256 哈希、防暴力破解、会话管理等核心技术。',
-                content: `## 前言\n\n在开发博客系统时，我需要一个密钥认证机制来保护文章的发布和删除操作。虽然纯前端方案无法达到服务端认证的安全级别，但通过合理的设计，仍然可以实现一套实用的安全体系。\n\n## 核心设计思路\n\n### 为什么不能明文存储密码？\n\n如果将密码以明文形式写在 JavaScript 代码中，任何人打开浏览器开发者工具就能直接看到密码。因此我们需要使用**单向哈希函数**——只存储密码的哈希值，验证时将用户输入进行哈希后与存储的哈希值比对。\n\n> 即使攻击者获取了哈希值，也无法反推出原始密码\n\n## 技术实现\n\n### 1. SHA-256 哈希 (Web Crypto API)\n\n我们使用浏览器原生的 Web Crypto API 来计算 SHA-256 哈希，无需引入任何第三方库：\n\n\`\`\`javascript\nasync function sha256(message) {\n    const encoder = new TextEncoder();\n    const data = encoder.encode(message);\n    const hashBuffer = await crypto.subtle.digest('SHA-256', data);\n    const hashArray = Array.from(new Uint8Array(hashBuffer));\n    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');\n}\n\`\`\`\n\n**关键点：**\n- \`TextEncoder\` 将字符串转为 UTF-8 字节序列\n- \`crypto.subtle.digest\` 是浏览器原生 API，性能优秀\n- 最终输出 64 位十六进制字符串\n\n### 2. 密码验证流程\n\n验证过程是异步的，流程如下：\n\n1. 用户输入密码\n2. 调用 \`sha256()\` 计算输入密码的哈希\n3. 将计算结果与预存的 \`KEY_HASH\` 常量比对\n4. 匹配则认证成功，否则记录失败次数\n\n\`\`\`javascript\nconst KEY_HASH = '8d969e...'; // 预计算的哈希值\n\nasync function verifyPassword(password) {\n    const hash = await sha256(password);\n    return hash === KEY_HASH;\n}\n\`\`\`\n\n### 3. 防暴力破解机制\n\n为防止攻击者通过自动化脚本穷举密码，系统实现了**失败次数限制 + 时间锁定**：\n\n\`\`\`javascript\nconst MAX_ATTEMPTS = 5;       // 最大尝试次数\nconst LOCKOUT_DURATION = 60000; // 锁定60秒\nlet failedAttempts = 0;\nlet lockoutUntil = 0;\n\`\`\`\n\n**策略：**\n- 连续失败 5 次后，锁定账户 60 秒\n- 锁定期间任何验证请求直接拒绝\n- 成功认证后重置失败计数器\n- 显示剩余尝试次数，给用户明确反馈\n\n### 4. 会话管理\n\n认证成功后，系统创建一个**临时会话**，避免用户每次操作都需要输入密码：\n\n\`\`\`javascript\nconst SESSION_DURATION = 30 * 60 * 1000; // 30分钟\n\nfunction startSessionTimer() {\n    sessionTimer = setTimeout(() => {\n        isAuthenticated = false;\n        authSessionToken = null;\n        updateAuthUI();\n    }, SESSION_DURATION);\n}\n\`\`\`\n\n**特性：**\n- 会话有效期 30 分钟，到期自动登出\n- 使用 \`crypto.randomUUID()\` 生成随机会话令牌\n- 提供手动登出功能\n- 实时 UI 状态指示器（绿点 = 已认证）\n\n### 5. 用户体验设计\n\n认证弹窗采用了多种 UX 优化：\n\n- **焦点管理**：弹窗打开自动聚焦密码输入框\n- **键盘支持**：Enter 确认、Escape 取消\n- **抖动动画**：密码错误时输入框抖动（CSS \`shake\` animation）\n- **错误反馈**：实时显示错误信息和剩余尝试次数\n- **状态指示器**：导航栏显示当前认证状态\n\n\`\`\`css\n@keyframes shake {\n    0%, 100% { transform: translateX(0); }\n    20% { transform: translateX(-10px); }\n    40% { transform: translateX(10px); }\n    60% { transform: translateX(-6px); }\n    80% { transform: translateX(6px); }\n}\n\`\`\`\n\n## 安全分析\n\n### 优势\n- 密码不以明文存储在代码中\n- SHA-256 抗碰撞、抗预像攻击\n- 防暴力破解的频率限制\n- 会话自动过期机制\n\n### 局限性\n- 前端代码可被审查，哈希值可见（可针对性彩虹表攻击）\n- 客户端逻辑可被绕过（通过修改 JS）\n- 无服务端验证，安全性依赖客户端\n\n### 可能的改进方向\n- 引入 **PBKDF2/Argon2** 增加哈希计算成本\n- 添加**盐值 (Salt)** 防止彩虹表攻击\n- 使用后端 API 进行真正的服务端认证\n- 结合 **JWT Token** 实现跨页面会话\n\n## 总结\n\n这套前端密钥系统在保证易用性的同时，尽可能地提升了安全性。虽然它不适用于高安全要求的生产环境，但对于个人博客这样的轻量级场景来说，已经是一个很好的平衡。\n\n> 安全永远是一个权衡——在便利性和保护力度之间找到合适的平衡点`,
-                date: '2026-03-12',
-                timestamp: Date.now() - 2000
-            }
-        ];
-
-        function loadPosts() {
-            const data = localStorage.getItem(STORAGE_KEY);
-            if (data) {
-                return JSON.parse(data);
-            }
-            // 首次访问，写入默认文章
-            savePosts(DEFAULT_POSTS);
-            return DEFAULT_POSTS;
+        function getToken() {
+            return localStorage.getItem(TOKEN_KEY) || '';
         }
 
-        function savePosts(posts) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+        function saveToken(token) {
+            if (token) {
+                localStorage.setItem(TOKEN_KEY, token);
+            } else {
+                localStorage.removeItem(TOKEN_KEY);
+            }
+        }
+
+        // GitHub API: 获取文件内容（含 sha）
+        async function ghGetFile(path) {
+            const token = getToken();
+            const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            if (resp.status === 404) return null;
+            if (!resp.ok) throw new Error(`GitHub API 错误: ${resp.status}`);
+            return await resp.json();
+        }
+
+        // GitHub API: 创建或更新文件
+        async function ghPutFile(path, content, message, sha) {
+            const token = getToken();
+            const body = {
+                message,
+                content: btoa(unescape(encodeURIComponent(content))),
+                branch: GITHUB_BRANCH
+            };
+            if (sha) body.sha = sha;
+
+            const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.message || `GitHub API 错误: ${resp.status}`);
+            }
+            return await resp.json();
+        }
+
+        // 生成 slug（标题转文件名）
+        function titleToSlug(title) {
+            return title
+                .toLowerCase()
+                .replace(/[^\w\u4e00-\u9fff]+/g, '-')
+                .replace(/^-|-$/g, '')
+                .substring(0, 60) || ('post-' + Date.now());
+        }
+
+        // 发布文章到 GitHub 仓库
+        async function publishToRepo(title, tag, summary, content, date) {
+            const token = getToken();
+            if (!token) {
+                throw new Error('请先配置 GitHub Token');
+            }
+
+            const slug = titleToSlug(title);
+            const mdPath = `posts/${slug}.md`;
+            const indexPath = 'posts/index.json';
+
+            // 1. 检查 MD 文件是否已存在
+            const existingMd = await ghGetFile(mdPath);
+            if (existingMd) {
+                if (!confirm(`文件 ${slug}.md 已存在，是否覆盖？`)) {
+                    throw new Error('用户取消');
+                }
+            }
+
+            // 2. 创建/更新 MD 文件
+            await ghPutFile(
+                mdPath,
+                content,
+                `📝 发布文章: ${title}`,
+                existingMd ? existingMd.sha : null
+            );
+
+            // 3. 更新 index.json
+            const indexFile = await ghGetFile(indexPath);
+            let indexArr = [];
+            if (indexFile) {
+                const decoded = decodeURIComponent(escape(atob(indexFile.content.replace(/\n/g, ''))));
+                indexArr = JSON.parse(decoded);
+            }
+
+            // 检查是否已有该 slug
+            const existingIdx = indexArr.findIndex(item => item.slug === slug);
+            const newEntry = { slug, title, date, tag: tag || '未分类', summary: summary || title };
+
+            if (existingIdx >= 0) {
+                indexArr[existingIdx] = newEntry;
+            } else {
+                indexArr.unshift(newEntry);
+            }
+
+            await ghPutFile(
+                indexPath,
+                JSON.stringify(indexArr, null, 4) + '\n',
+                `📋 更新文章索引: ${title}`,
+                indexFile ? indexFile.sha : null
+            );
+
+            return slug;
+        }
+
+        // Token 配置弹窗逻辑
+        function initTokenModal() {
+            const modal = document.getElementById('tokenModal');
+            const input = document.getElementById('tokenInput');
+            const status = document.getElementById('tokenStatus');
+            const saveBtn = document.getElementById('tokenSave');
+            const clearBtn = document.getElementById('tokenClear');
+            const cancelBtn = document.getElementById('tokenCancel');
+            const configBtn = document.getElementById('tokenConfigBtn');
+
+            configBtn.addEventListener('click', () => {
+                modal.classList.add('visible');
+                input.value = getToken();
+                status.textContent = '';
+                status.className = 'token-status';
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                modal.classList.remove('visible');
+            });
+
+            clearBtn.addEventListener('click', () => {
+                saveToken('');
+                input.value = '';
+                status.textContent = '✅ Token 已清除';
+                status.className = 'token-status ok';
+            });
+
+            saveBtn.addEventListener('click', async () => {
+                const token = input.value.trim();
+                if (!token) {
+                    status.textContent = '请输入 Token';
+                    status.className = 'token-status err';
+                    return;
+                }
+
+                status.textContent = '验证中...';
+                status.className = 'token-status';
+
+                try {
+                    // 验证 Token 是否有效
+                    const resp = await fetch('https://api.github.com/user', {
+                        headers: { 'Authorization': `token ${token}` }
+                    });
+                    if (!resp.ok) throw new Error('Token 无效');
+                    const user = await resp.json();
+                    saveToken(token);
+                    status.textContent = `✅ 验证成功！已关联: ${user.login}`;
+                    status.className = 'token-status ok';
+                    setTimeout(() => modal.classList.remove('visible'), 1500);
+                } catch (e) {
+                    status.textContent = '❌ ' + e.message;
+                    status.className = 'token-status err';
+                }
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('visible');
+            });
+        }
+
+        // ============ 博客数据管理 (文件 + localStorage草稿) ============
+        const DRAFT_KEY = 'zebra_blog_drafts';
+
+        // 已发布文章（从 posts/ 目录加载）
+        let publishedPosts = [];
+        // 本地草稿（localStorage）
+        let draftPosts = [];
+
+        // 加载本地草稿
+        function loadDrafts() {
+            const data = localStorage.getItem(DRAFT_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveDrafts() {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draftPosts));
+        }
+
+        // 从 posts/index.json 加载已发布文章索引
+        async function loadPublishedIndex() {
+            try {
+                const resp = await fetch('posts/index.json?t=' + Date.now());
+                if (!resp.ok) throw new Error('Failed to fetch index');
+                const index = await resp.json();
+                publishedPosts = index.map((item, i) => ({
+                    id: 'pub_' + item.slug,
+                    slug: item.slug,
+                    title: item.title,
+                    tag: item.tag || '未分类',
+                    summary: item.summary || '',
+                    date: item.date || '',
+                    timestamp: new Date(item.date).getTime() || (Date.now() - i * 1000),
+                    isPublished: true,
+                    content: null // 按需加载
+                }));
+            } catch (e) {
+                console.warn('无法加载文章索引:', e);
+                publishedPosts = [];
+            }
+        }
+
+        // 按需加载某篇已发布文章的 Markdown 内容
+        async function loadPostContent(post) {
+            if (post.content !== null) return post.content;
+            try {
+                const resp = await fetch('posts/' + post.slug + '.md?t=' + Date.now());
+                if (!resp.ok) throw new Error('Failed to fetch');
+                post.content = await resp.text();
+                return post.content;
+            } catch (e) {
+                console.warn('无法加载文章内容:', e);
+                return '> 文章内容加载失败，请稍后再试。';
+            }
+        }
+
+        // 获取所有文章（已发布 + 草稿），合并后按时间倒序
+        function getAllPosts() {
+            return [...publishedPosts, ...draftPosts];
         }
 
         // ============ 简单 Markdown 渲染 ============
@@ -1177,9 +1589,13 @@
         }
 
         // ============ 渲染函数 ============
-        let posts = loadPosts();
+        let posts = []; // 合并后的文章列表
         let currentView = 'list'; // list | detail
         let currentFilter = 'all';
+
+        function refreshPosts() {
+            posts = getAllPosts();
+        }
 
         function getAllTags() {
             const tags = new Set();
@@ -1234,13 +1650,14 @@
 
             container.innerHTML = sorted.map(post => `
                 <div class="post-card" data-id="${post.id}">
-                    <div class="card-actions">
-                        <button class="edit-btn" data-edit="${post.id}" title="编辑文章">✎</button>
-                        <button class="delete-btn" data-delete="${post.id}" title="删除文章">✕</button>
-                    </div>
+                    ${!post.isPublished ? `<div class="card-actions">
+                        <button class="edit-btn" data-edit="${post.id}" title="编辑草稿">✎</button>
+                        <button class="delete-btn" data-delete="${post.id}" title="删除草稿">✕</button>
+                    </div>` : ''}
                     <div class="post-meta">
                         <span class="post-date">📅 ${post.date}</span>
                         ${post.tag ? `<span class="post-tag">${post.tag}</span>` : ''}
+                        ${!post.isPublished ? '<span class="post-tag draft-tag">📝 本地草稿</span>' : ''}
                     </div>
                     <h2>${escapeHtml(post.title)}</h2>
                     <p class="post-summary">${escapeHtml(post.summary)}</p>
@@ -1268,7 +1685,7 @@
                 });
             });
 
-            // 删除按钮
+            // 删除按钮（仅草稿）
             container.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
@@ -1277,9 +1694,10 @@
                     const authed = await requireAuth();
                     if (!authed) return;
 
-                    if (confirm('确定要删除这篇文章吗？')) {
-                        posts = posts.filter(p => p.id !== id);
-                        savePosts(posts);
+                    if (confirm('确定要删除这篇草稿吗？')) {
+                        draftPosts = draftPosts.filter(p => p.id !== id);
+                        saveDrafts();
+                        refreshPosts();
                         renderTags();
                         renderList();
                     }
@@ -1287,9 +1705,15 @@
             });
         }
 
-        function showDetail(id) {
+        async function showDetail(id) {
             const post = posts.find(p => p.id === id);
             if (!post) return;
+
+            // 按需加载已发布文章的 Markdown 内容
+            let content = post.content;
+            if (post.isPublished && content === null) {
+                content = await loadPostContent(post);
+            }
 
             const container = document.getElementById('postsList');
             const detail = document.getElementById('postDetail');
@@ -1303,15 +1727,16 @@
                 <div class="detail-header">
                     <div class="back-to-list" id="backToList">← 返回列表</div>
                     <h1>${escapeHtml(post.title)}
-                        <button class="detail-edit-btn" id="detailEditBtn" data-id="${post.id}">✎ 编辑</button>
+                        ${!post.isPublished ? `<button class="detail-edit-btn" id="detailEditBtn" data-id="${post.id}">✎ 编辑</button>` : ''}
                     </h1>
                     <div class="meta-row">
                         <span>📅 ${post.date}</span>
                         ${post.tag ? `<span class="tag">${escapeHtml(post.tag)}</span>` : ''}
+                        ${!post.isPublished ? '<span class="tag draft-tag">📝 本地草稿</span>' : ''}
                     </div>
                 </div>
                 <div class="article-content">
-                    ${renderMarkdown(post.content)}
+                    ${renderMarkdown(content || '')}
                 </div>
             `;
 
@@ -1321,11 +1746,14 @@
                 window.scrollTo(0, 0);
             });
 
-            document.getElementById('detailEditBtn').addEventListener('click', async () => {
-                const authed = await requireAuth();
-                if (!authed) return;
-                openEditor(post.id);
-            });
+            const editBtn = document.getElementById('detailEditBtn');
+            if (editBtn) {
+                editBtn.addEventListener('click', async () => {
+                    const authed = await requireAuth();
+                    if (!authed) return;
+                    openEditor(post.id);
+                });
+            }
 
             window.scrollTo(0, 0);
         }
@@ -1340,18 +1768,18 @@
         const writeBtn = document.getElementById('writeBtn');
         const editorModal = document.getElementById('editorModal');
         const editorCancel = document.getElementById('editorCancel');
-        const editorPublish = document.getElementById('editorPublish');
+        const editorSaveDraft = document.getElementById('editorSaveDraft');
+        const editorPublishRepo = document.getElementById('editorPublishRepo');
         const editorHeading = document.getElementById('editorHeading');
         let editingPostId = null; // null=新建, 有值=编辑
 
         function openEditor(postId) {
             if (postId) {
-                // 编辑模式
-                const post = posts.find(p => p.id === postId);
+                // 编辑模式（仅草稿可编辑）
+                const post = draftPosts.find(p => p.id === postId);
                 if (!post) return;
                 editingPostId = postId;
-                editorHeading.textContent = '✏️ 编辑文章';
-                editorPublish.textContent = '保存修改';
+                editorHeading.textContent = '✏️ 编辑草稿';
                 document.getElementById('editorTitle').value = post.title;
                 document.getElementById('editorTag').value = post.tag || '';
                 document.getElementById('editorSummary').value = post.summary || '';
@@ -1360,7 +1788,6 @@
                 // 新建模式
                 editingPostId = null;
                 editorHeading.textContent = '✍️ 写文章';
-                editorPublish.textContent = '发布文章';
                 document.getElementById('editorTitle').value = '';
                 document.getElementById('editorTag').value = '';
                 document.getElementById('editorSummary').value = '';
@@ -1380,37 +1807,35 @@
             editorModal.classList.remove('visible');
         });
 
-        editorPublish.addEventListener('click', () => {
+        // 获取编辑器当前内容
+        function getEditorData() {
             const title = document.getElementById('editorTitle').value.trim();
             const tag = document.getElementById('editorTag').value.trim();
             const summary = document.getElementById('editorSummary').value.trim();
             const content = document.getElementById('editorContent').value.trim();
-
-            if (!title) {
-                alert('请输入文章标题');
-                return;
-            }
-            if (!content) {
-                alert('请输入文章内容');
-                return;
-            }
-
             const now = new Date();
             const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            return { title, tag, summary, content, date };
+        }
+
+        // 保存草稿按钮
+        editorSaveDraft.addEventListener('click', () => {
+            const { title, tag, summary, content, date } = getEditorData();
+
+            if (!title) { alert('请输入文章标题'); return; }
+            if (!content) { alert('请输入文章内容'); return; }
 
             if (editingPostId) {
-                // 编辑模式：更新已有文章
-                const post = posts.find(p => p.id === editingPostId);
+                const post = draftPosts.find(p => p.id === editingPostId);
                 if (post) {
                     post.title = title;
                     post.tag = tag || '未分类';
                     post.summary = summary || title;
                     post.content = content;
                     post.date = date;
-                    savePosts(posts);
+                    saveDrafts();
                 }
             } else {
-                // 新建模式
                 const newPost = {
                     id: Date.now(),
                     title,
@@ -1418,17 +1843,64 @@
                     summary: summary || title,
                     content,
                     date,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    isPublished: false
                 };
-                posts.unshift(newPost);
-                savePosts(posts);
+                draftPosts.unshift(newPost);
+                saveDrafts();
             }
 
             editorModal.classList.remove('visible');
             editingPostId = null;
             currentFilter = 'all';
+            refreshPosts();
             renderTags();
             renderList();
+        });
+
+        // 发布到仓库按钮
+        editorPublishRepo.addEventListener('click', async () => {
+            const { title, tag, summary, content, date } = getEditorData();
+
+            if (!title) { alert('请输入文章标题'); return; }
+            if (!content) { alert('请输入文章内容'); return; }
+
+            if (!getToken()) {
+                alert('请先配置 GitHub Token（点击导航栏的 🔑 Token 按钮）');
+                return;
+            }
+
+            editorPublishRepo.disabled = true;
+            editorPublishRepo.textContent = '⏳ 发布中...';
+
+            try {
+                const slug = await publishToRepo(title, tag, summary, content, date);
+
+                // 如果是从草稿发布，删除对应草稿
+                if (editingPostId) {
+                    draftPosts = draftPosts.filter(p => p.id !== editingPostId);
+                    saveDrafts();
+                }
+
+                editorModal.classList.remove('visible');
+                editingPostId = null;
+
+                alert(`✅ 文章已发布到仓库！\n\n文件: posts/${slug}.md\nGitHub Pages 会在几分钟内自动更新。`);
+
+                // 重新加载已发布文章索引
+                await loadPublishedIndex();
+                currentFilter = 'all';
+                refreshPosts();
+                renderTags();
+                renderList();
+            } catch (e) {
+                if (e.message !== '用户取消') {
+                    alert('❌ 发布失败: ' + e.message);
+                }
+            } finally {
+                editorPublishRepo.disabled = false;
+                editorPublishRepo.textContent = '🚀 发布到仓库';
+            }
         });
 
         // ============ 键盘快捷键 ============
@@ -1444,9 +1916,16 @@
         });
 
         // ============ 初始化 ============
-        updateAuthUI();
-        renderTags();
-        renderList();
+        async function init() {
+            updateAuthUI();
+            initTokenModal();
+            draftPosts = loadDrafts();
+            await loadPublishedIndex();
+            refreshPosts();
+            renderTags();
+            renderList();
+        }
+        init();
     </script>
 </body>
 
