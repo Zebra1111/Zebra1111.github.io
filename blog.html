@@ -1327,12 +1327,21 @@
             }
         }
 
+        // 自动识别 Token 类型，返回正确的 Authorization 头
+        function getAuthHeader() {
+            const token = getToken();
+            if (!token) return '';
+            // Fine-grained token 以 github_pat_ 开头，用 Bearer
+            // Classic token 以 ghp_ 开头，也兼容 Bearer
+            // 统一用 Bearer 格式，两种 Token 都支持
+            return `Bearer ${token}`;
+        }
+
         // GitHub API: 获取文件内容（含 sha）
         async function ghGetFile(path) {
-            const token = getToken();
             const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`, {
                 headers: {
-                    'Authorization': `token ${token}`,
+                    'Authorization': getAuthHeader(),
                     'Accept': 'application/vnd.github.v3+json'
                 }
             });
@@ -1343,7 +1352,6 @@
 
         // GitHub API: 创建或更新文件
         async function ghPutFile(path, content, message, sha) {
-            const token = getToken();
             const body = {
                 message,
                 content: btoa(unescape(encodeURIComponent(content))),
@@ -1354,7 +1362,7 @@
             const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token ${token}`,
+                    'Authorization': getAuthHeader(),
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 },
@@ -1473,7 +1481,7 @@
                 try {
                     // 验证 Token 是否有效
                     const resp = await fetch('https://api.github.com/user', {
-                        headers: { 'Authorization': `token ${token}` }
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (!resp.ok) throw new Error('Token 无效');
                     const user = await resp.json();
