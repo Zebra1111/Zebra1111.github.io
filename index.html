@@ -649,7 +649,18 @@
             }
         });
 
-        canvas.addEventListener('click', () => {
+        canvas.addEventListener('click', (e) => {
+            // 优先检测是否点击了物品，直接跳转
+            for (const item of items) {
+                if (!item.alive) continue;
+                const now = performance.now() / 1000;
+                const floatY = item.y + Math.sin(now * 1.5 + item.phase) * 3;
+                const dist = Math.hypot(e.clientX - item.x, e.clientY - floatY);
+                if (dist < item.size / 2 + 10) {
+                    window.open(item.url, '_blank');
+                    return;
+                }
+            }
             launchHook();
         });
 
