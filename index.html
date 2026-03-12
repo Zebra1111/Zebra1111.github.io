@@ -790,7 +790,7 @@
                     tooltip.style.display = 'block';
                     tooltip.style.left = (e.clientX + 15) + 'px';
                     tooltip.style.top = (e.clientY - 10) + 'px';
-                    tooltip.textContent = `${item.icon} ${item.label}${item.value ? ' $' + item.value : ''}`;
+                    tooltip.textContent = `${item.label}${item.value ? ' $' + item.value : ''}`;
                     canvas.style.cursor = 'pointer';
                     found = true;
                     break;
