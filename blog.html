@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zebra's Blog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0d0521;
+            color: #e0e0e0;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ===== 顶部导航 ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(13, 5, 33, 0.95);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar .logo {
+            color: #ffd700;
+            font-size: 22px;
+            font-weight: bold;
+            text-decoration: none;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .navbar .back-btn {
+            color: #ffd700;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 18px;
+            border: 1.5px solid #ffd700;
+            border-radius: 8px;
+            transition: all 0.2s;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .navbar .back-btn:hover {
+            background: rgba(255, 215, 0, 0.25);
+            transform: scale(1.05);
+        }
+
+        /* ===== 主布局 ===== */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+        }
+
+        /* ===== 博客头部 ===== */
+        .blog-header {
+            text-align: center;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+
+        .blog-header h1 {
+            color: #ffd700;
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .blog-header p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+        }
+
+        /* ===== 标签筛选 ===== */
+        .tag-filter {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 35px;
+        }
+
+        .tag-filter .tag {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.05);
+            color: rgba(255, 215, 0, 0.7);
+            transition: all 0.2s;
+        }
+
+        .tag-filter .tag:hover,
+        .tag-filter .tag.active {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            border-color: #ffd700;
+        }
+
+        /* ===== 文章卡片 ===== */
+        .posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post-card {
+            background: linear-gradient(135deg, rgba(42, 26, 78, 0.6) 0%, rgba(26, 10, 46, 0.8) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 14px;
+            padding: 28px 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: #ffd700;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .post-card:hover {
+            border-color: rgba(255, 215, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.08);
+        }
+
+        .post-card:hover::before {
+            opacity: 1;
+        }
+
+        .post-card .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .post-card .post-date {
+            color: rgba(255, 215, 0, 0.6);
+        }
+
+        .post-card .post-tag {
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            background: rgba(255, 215, 0, 0.1);
+            color: rgba(255, 215, 0, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .post-card h2 {
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            transition: color 0.2s;
+        }
+
+        .post-card:hover h2 {
+            color: #ffd700;
+        }
+
+        .post-card .post-summary {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 14px;
+            line-height: 1.7;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .post-card .read-more {
+            display: inline-block;
+            margin-top: 14px;
+            color: #ffd700;
+            font-size: 13px;
+            opacity: 0;
+            transform: translateX(-8px);
+            transition: all 0.3s;
+        }
+
+        .post-card:hover .read-more {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* ===== 文章详情 ===== */
+        .post-detail {
+            display: none;
+        }
+
+        .post-detail.visible {
+            display: block;
+        }
+
+        .post-detail .detail-header {
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .post-detail .detail-header .back-to-list {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #ffd700;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .post-detail .detail-header .back-to-list:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .post-detail .detail-header h1 {
+            color: #fff;
+            font-size: 30px;
+            line-height: 1.4;
+            margin-bottom: 14px;
+        }
+
+        .post-detail .detail-header .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .post-detail .detail-header .meta-row .tag {
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            background: rgba(255, 215, 0, 0.1);
+            color: rgba(255, 215, 0, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .post-detail .article-content {
+            line-height: 1.9;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .post-detail .article-content h2 {
+            color: #ffd700;
+            font-size: 22px;
+            margin: 30px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+        }
+
+        .post-detail .article-content h3 {
+            color: rgba(255, 215, 0, 0.85);
+            font-size: 18px;
+            margin: 24px 0 12px;
+        }
+
+        .post-detail .article-content p {
+            margin-bottom: 16px;
+        }
+
+        .post-detail .article-content code {
+            background: rgba(255, 215, 0, 0.08);
+            color: #ffd700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .post-detail .article-content pre {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .post-detail .article-content pre code {
+            background: none;
+            padding: 0;
+            color: #e0e0e0;
+        }
+
+        .post-detail .article-content ul,
+        .post-detail .article-content ol {
+            margin: 12px 0 16px 24px;
+        }
+
+        .post-detail .article-content li {
+            margin-bottom: 8px;
+        }
+
+        .post-detail .article-content blockquote {
+            border-left: 3px solid #ffd700;
+            padding: 12px 20px;
+            margin: 16px 0;
+            background: rgba(255, 215, 0, 0.04);
+            border-radius: 0 8px 8px 0;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .post-detail .article-content a {
+            color: #ffd700;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* ===== 写文章按钮 & 编辑器 ===== */
+        .write-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #ffd700;
+            color: #1a0a2e;
+            font-size: 28px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+            transition: all 0.2s;
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .write-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        /* ===== 编辑器弹窗 ===== */
+        .editor-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .editor-modal.visible {
+            display: flex;
+        }
+
+        .editor-box {
+            background: linear-gradient(135deg, #1a0a2e 0%, #0d0521 100%);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .editor-box h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .editor-box label {
+            display: block;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            margin-bottom: 6px;
+            margin-top: 16px;
+        }
+
+        .editor-box input,
+        .editor-box textarea,
+        .editor-box select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .editor-box input:focus,
+        .editor-box textarea:focus {
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+
+        .editor-box textarea {
+            min-height: 250px;
+            resize: vertical;
+            line-height: 1.7;
+        }
+
+        .editor-box .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            justify-content: flex-end;
+        }
+
+        .editor-box .btn-row button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .editor-box .btn-publish {
+            background: #ffd700;
+            color: #1a0a2e;
+        }
+
+        .editor-box .btn-publish:hover {
+            background: #ffed4a;
+        }
+
+        .editor-box .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+        }
+
+        .editor-box .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .editor-box .format-hint {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 6px;
+        }
+
+        /* ===== 空状态 ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .empty-state .icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        /* ===== 删除按钮 ===== */
+        .post-card .delete-btn {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 60, 60, 0.15);
+            color: rgba(255, 100, 100, 0.6);
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .post-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .post-card .delete-btn:hover {
+            background: rgba(255, 60, 60, 0.3);
+            color: #ff6464;
+        }
+
+        /* ===== 页脚 ===== */
+        .footer {
+            text-align: center;
+            padding: 40px 0 30px;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 13px;
+            border-top: 1px solid rgba(255, 215, 0, 0.05);
+            margin-top: 50px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 600px) {
+            .blog-header h1 {
+                font-size: 26px;
+            }
+
+            .post-card {
+                padding: 20px;
+            }
+
+            .post-card h2 {
+                font-size: 17px;
+            }
+
+            .post-detail .detail-header h1 {
+                font-size: 22px;
+            }
+
+            .editor-box {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">📝 Zebra's Blog</a>
+        <a href="index.html" class="back-btn">⛏️ 返回矿工</a>
+    </nav>
+
+    <div class="main-container">
+        <!-- 博客头部 -->
+        <div class="blog-header">
+            <h1>Zebra's Blog</h1>
+            <p>记录学习与思考的地方</p>
+        </div>
+
+        <!-- 标签筛选 -->
+        <div class="tag-filter" id="tagFilter">
+            <span class="tag active" data-tag="all">全部</span>
+        </div>
+
+        <!-- 文章列表 -->
+        <div class="posts-list" id="postsList"></div>
+
+        <!-- 文章详情 -->
+        <div class="post-detail" id="postDetail"></div>
+
+        <!-- 页脚 -->
+        <div class="footer">
+            © 2026 Zebra's Blog · Powered by ⛏️ 黄金矿工
+        </div>
+    </div>
+
+    <!-- 写文章按钮 -->
+    <button class="write-btn" id="writeBtn" title="写文章">✏️</button>
+
+    <!-- 编辑器弹窗 -->
+    <div class="editor-modal" id="editorModal">
+        <div class="editor-box">
+            <h2>✍️ 写文章</h2>
+
+            <label>标题</label>
+            <input type="text" id="editorTitle" placeholder="输入文章标题...">
+
+            <label>标签</label>
+            <input type="text" id="editorTag" placeholder="如: 技术, 生活, JavaScript...">
+
+            <label>摘要</label>
+            <input type="text" id="editorSummary" placeholder="一句话简介...">
+
+            <label>正文内容</label>
+            <textarea id="editorContent"
+                placeholder="支持简单的 Markdown 语法：&#10;&#10;## 二级标题&#10;### 三级标题&#10;**粗体** *斜体*&#10;`行内代码`&#10;```代码块```&#10;> 引用&#10;- 列表项&#10;[链接文字](url)"></textarea>
+            <div class="format-hint">支持简单 Markdown: ## 标题, **粗体**, `代码`, ```代码块```, > 引用, - 列表, [链接](url)</div>
+
+            <div class="btn-row">
+                <button class="btn-cancel" id="editorCancel">取消</button>
+                <button class="btn-publish" id="editorPublish">发布文章</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ 博客数据管理 (localStorage) ============
+        const STORAGE_KEY = 'zebra_blog_posts';
+
+        // 预置的示例文章
+        const DEFAULT_POSTS = [
+            {
+                id: 1,
+                title: '欢迎来到我的博客 👋',
+                tag: '日常',
+                summary: '这是我的第一篇博客，用来记录学习与生活中的点滴。',
+                content: `## 你好，世界！\n\n欢迎来到 **Zebra's Blog** 🎉\n\n这是一个基于黄金矿工主页的博客系统，你可以在这里：\n\n- 📝 记录技术笔记\n- 💡 分享学习心得\n- 🎯 追踪项目进展\n\n### 如何使用\n\n点击右下角的 ✏️ 按钮即可开始写文章，支持简单的 Markdown 语法。\n\n> 好记性不如烂笔头\n\n文章数据存储在浏览器的 \`localStorage\` 中，刷新页面不会丢失。\n\n### 示例代码\n\n\`\`\`javascript\nconsole.log('Hello, Zebra Blog!');\n\`\`\`\n\n希望你能喜欢这个小博客！`,
+                date: '2026-03-12',
+                timestamp: Date.now()
+            },
+            {
+                id: 2,
+                title: '用 Canvas 实现黄金矿工游戏',
+                tag: '技术',
+                summary: '分享如何使用 HTML5 Canvas 从零开始实现一个黄金矿工小游戏。',
+                content: `## 项目介绍\n\n黄金矿工是一个经典的 4399 小游戏，这次我用纯前端技术把它复刻了出来，作为我的 GitHub 主页。\n\n### 技术栈\n\n- **HTML5 Canvas** — 游戏渲染\n- **原生 JavaScript** — 游戏逻辑\n- **CSS3** — UI 界面\n\n### 核心逻辑\n\n游戏主要分为以下几个模块：\n\n1. **钩爪摆动** — 使用三角函数控制角度\n2. **碰撞检测** — 计算钩爪与物品的距离\n3. **状态机** — swinging / extending / retracting\n\n\`\`\`javascript\n// 钩爪位置计算\nminer.hookX = miner.x + Math.sin(miner.angle) * miner.ropeLen;\nminer.hookY = miner.y + Math.cos(miner.angle) * miner.ropeLen;\n\`\`\`\n\n### 粒子效果\n\n抓到物品时会触发金色粒子爆炸效果，增加游戏的视觉反馈。\n\n> 用简单的数学就能创造有趣的游戏体验`,
+                date: '2026-03-12',
+                timestamp: Date.now() - 1000
+            }
+        ];
+
+        function loadPosts() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) {
+                return JSON.parse(data);
+            }
+            // 首次访问，写入默认文章
+            savePosts(DEFAULT_POSTS);
+            return DEFAULT_POSTS;
+        }
+
+        function savePosts(posts) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+        }
+
+        // ============ 简单 Markdown 渲染 ============
+        function renderMarkdown(md) {
+            let html = md
+                // 代码块
+                .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                // 行内代码
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                // 标题
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                // 粗体和斜体
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                // 引用
+                .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+                // 无序列表
+                .replace(/^- (.+)$/gm, '<li>$1</li>')
+                // 链接
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                // 段落（双换行）
+                .replace(/\n\n/g, '</p><p>')
+                // 单换行
+                .replace(/\n/g, '<br>');
+
+            // 合并连续 li
+            html = html.replace(/(<li>.*?<\/li>)(?:<br>)?/g, '$1');
+            html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+            // 去重嵌套 ul
+            html = html.replace(/<\/ul>\s*<ul>/g, '');
+
+            // 合并连续 blockquote
+            html = html.replace(/<\/blockquote>\s*<br>\s*<blockquote>/g, '<br>');
+
+            return '<p>' + html + '</p>';
+        }
+
+        // ============ 渲染函数 ============
+        let posts = loadPosts();
+        let currentView = 'list'; // list | detail
+        let currentFilter = 'all';
+
+        function getAllTags() {
+            const tags = new Set();
+            posts.forEach(p => {
+                if (p.tag) tags.add(p.tag);
+            });
+            return Array.from(tags);
+        }
+
+        function renderTags() {
+            const tagFilter = document.getElementById('tagFilter');
+            const tags = getAllTags();
+            tagFilter.innerHTML = '<span class="tag ' + (currentFilter === 'all' ? 'active' : '') + '" data-tag="all">全部</span>';
+            tags.forEach(tag => {
+                tagFilter.innerHTML += `<span class="tag ${currentFilter === tag ? 'active' : ''}" data-tag="${tag}">${tag}</span>`;
+            });
+
+            tagFilter.querySelectorAll('.tag').forEach(el => {
+                el.addEventListener('click', () => {
+                    currentFilter = el.dataset.tag;
+                    renderTags();
+                    renderList();
+                });
+            });
+        }
+
+        function renderList() {
+            const container = document.getElementById('postsList');
+            const detail = document.getElementById('postDetail');
+            container.style.display = '';
+            detail.style.display = 'none';
+            document.querySelector('.blog-header').style.display = '';
+            document.getElementById('tagFilter').style.display = '';
+            currentView = 'list';
+
+            const filtered = currentFilter === 'all'
+                ? posts
+                : posts.filter(p => p.tag === currentFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>还没有文章，点击右下角 ✏️ 开始写作吧</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 按时间倒序
+            const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
+
+            container.innerHTML = sorted.map(post => `
+                <div class="post-card" data-id="${post.id}">
+                    <button class="delete-btn" data-delete="${post.id}" title="删除文章">✕</button>
+                    <div class="post-meta">
+                        <span class="post-date">📅 ${post.date}</span>
+                        ${post.tag ? `<span class="post-tag">${post.tag}</span>` : ''}
+                    </div>
+                    <h2>${escapeHtml(post.title)}</h2>
+                    <p class="post-summary">${escapeHtml(post.summary)}</p>
+                    <span class="read-more">阅读全文 →</span>
+                </div>
+            `).join('');
+
+            // 绑定点击事件
+            container.querySelectorAll('.post-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.delete-btn')) return;
+                    const id = Number(card.dataset.id);
+                    showDetail(id);
+                });
+            });
+
+            // 删除按钮
+            container.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = Number(btn.dataset.delete);
+                    if (confirm('确定要删除这篇文章吗？')) {
+                        posts = posts.filter(p => p.id !== id);
+                        savePosts(posts);
+                        renderTags();
+                        renderList();
+                    }
+                });
+            });
+        }
+
+        function showDetail(id) {
+            const post = posts.find(p => p.id === id);
+            if (!post) return;
+
+            const container = document.getElementById('postsList');
+            const detail = document.getElementById('postDetail');
+            container.style.display = 'none';
+            detail.style.display = 'block';
+            document.querySelector('.blog-header').style.display = 'none';
+            document.getElementById('tagFilter').style.display = 'none';
+            currentView = 'detail';
+
+            detail.innerHTML = `
+                <div class="detail-header">
+                    <div class="back-to-list" id="backToList">← 返回列表</div>
+                    <h1>${escapeHtml(post.title)}</h1>
+                    <div class="meta-row">
+                        <span>📅 ${post.date}</span>
+                        ${post.tag ? `<span class="tag">${escapeHtml(post.tag)}</span>` : ''}
+                    </div>
+                </div>
+                <div class="article-content">
+                    ${renderMarkdown(post.content)}
+                </div>
+            `;
+
+            document.getElementById('backToList').addEventListener('click', () => {
+                renderList();
+                renderTags();
+                window.scrollTo(0, 0);
+            });
+
+            window.scrollTo(0, 0);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============ 编辑器 ============
+        const writeBtn = document.getElementById('writeBtn');
+        const editorModal = document.getElementById('editorModal');
+        const editorCancel = document.getElementById('editorCancel');
+        const editorPublish = document.getElementById('editorPublish');
+
+        writeBtn.addEventListener('click', () => {
+            editorModal.classList.add('visible');
+            document.getElementById('editorTitle').value = '';
+            document.getElementById('editorTag').value = '';
+            document.getElementById('editorSummary').value = '';
+            document.getElementById('editorContent').value = '';
+            document.getElementById('editorTitle').focus();
+        });
+
+        editorCancel.addEventListener('click', () => {
+            editorModal.classList.remove('visible');
+        });
+
+        editorModal.addEventListener('click', (e) => {
+            if (e.target === editorModal) {
+                editorModal.classList.remove('visible');
+            }
+        });
+
+        editorPublish.addEventListener('click', () => {
+            const title = document.getElementById('editorTitle').value.trim();
+            const tag = document.getElementById('editorTag').value.trim();
+            const summary = document.getElementById('editorSummary').value.trim();
+            const content = document.getElementById('editorContent').value.trim();
+
+            if (!title) {
+                alert('请输入文章标题');
+                return;
+            }
+            if (!content) {
+                alert('请输入文章内容');
+                return;
+            }
+
+            const now = new Date();
+            const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            const newPost = {
+                id: Date.now(),
+                title,
+                tag: tag || '未分类',
+                summary: summary || title,
+                content,
+                date,
+                timestamp: Date.now()
+            };
+
+            posts.unshift(newPost);
+            savePosts(posts);
+
+            editorModal.classList.remove('visible');
+            currentFilter = 'all';
+            renderTags();
+            renderList();
+        });
+
+        // ============ 键盘快捷键 ============
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (editorModal.classList.contains('visible')) {
+                    editorModal.classList.remove('visible');
+                } else if (currentView === 'detail') {
+                    renderList();
+                    renderTags();
+                }
+            }
+        });
+
+        // ============ 初始化 ============
+        renderTags();
+        renderList();
+    </script>
+</body>
+
+</html>
