@@ -280,22 +280,17 @@
 
         // 可抓取的物品 - 每个物品对应一个链接
         const LINK_ITEMS = [
-            { type: 'gold_large', label: 'GitHub', url: 'https://github.com/Zebra1111', icon: '🥇', size: 50, value: 300, desc: '我的 GitHub 主页' },
-            { type: 'gold_medium', label: '博客', url: 'blog.html', icon: '📝', size: 40, value: 200, desc: '我的技术博客' },
-            { type: 'diamond', label: '项目展示', url: 'https://github.com/Zebra1111?tab=repositories', icon: '💎', size: 35, value: 500, desc: '查看我的开源项目' },
-            { type: 'stone', label: 'B站', url: 'https://bilibili.com', icon: '📺', size: 48, value: 50, desc: '哔哩哔哩主页' },
-            { type: 'emerald', label: '简历', url: '#resume', icon: '💚', size: 34, value: 250, desc: '我的在线简历' },
-            { type: 'ruby', label: '联系我', url: 'mailto:example@email.com', icon: '❤️', size: 36, value: 350, desc: '发送邮件联系我' },
-            { type: 'gold_medium', label: 'Twitter/X', url: 'https://x.com', icon: '🐦', size: 38, value: 150, desc: '我的推特' },
-            { type: 'sapphire', label: '知乎', url: 'https://zhihu.com', icon: '💙', size: 33, value: 200, desc: '知乎主页' },
-            { type: 'gold_small', label: 'LeetCode', url: 'https://leetcode.cn', icon: '🧩', size: 30, value: 400, desc: '力扣刷题记录' },
+            { type: 'GitHub', label: 'GitHub', url: 'https://github.com/Zebra1111', icon: '🌍', size: 50, value: 300, desc: '我的 GitHub 主页' },
+            { type: 'Blog', label: '博客', url: 'blog.html', icon: '📝', size: 40, value: 200, desc: '我的技术博客' },
+            { type: 'Project', label: '项目展示', url: 'https://github.com/Zebra1111?tab=repositories', icon: '🏆', size: 35, value: 500, desc: '查看我的开源项目' },
+            { type: 'LeetCode', label: 'LeetCode', url: 'https://leetcode.cn/progress/', icon: '🎯', size: 30, value: 400, desc: '力扣刷题记录' },
         ];
 
         // 随机数量的黄金、石头、炸弹
         const RANDOM_ITEMS = [
-            { type: 'gold', label: '大黄金', icon: '🪙', iconSrc: 'icon/gold.png', size: 50, value: 500, desc: '价值连城的大黄金!' },
-            { type: 'silver', label: '白银', icon: '✨', iconSrc: 'icon/silver.png', size: 40, value: 250, desc: '闪闪发亮的白银' },
-            { type: 'stone', label: '石头', icon: '🪨', iconSrc: 'icon/stone.png', size: 48, value: 10, desc: '不值钱的石头' },
+            { type: 'gold', label: '大黄金', iconSrc: 'icon/gold.png', size: 50, value: 500, desc: '价值连城的大黄金!' },
+            { type: 'silver', label: '白银', iconSrc: 'icon/silver.png', size: 40, value: 250, desc: '闪闪发亮的白银' },
+            { type: 'stone', label: '石头', iconSrc: 'icon/stone.png', size: 48, value: 10, desc: '不值钱的石头' },
             { type: 'bomb', label: '炸弹', icon: '💣', size: 38, value: 0, desc: '危险! 小心爆炸!' },
         ];
 
