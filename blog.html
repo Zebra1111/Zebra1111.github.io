@@ -889,6 +889,46 @@
             background: rgba(255, 215, 0, 0.08);
         }
 
+        /* 导航栏验证密钥按钮 */
+        .navbar .verify-btn {
+            color: rgba(255, 215, 0, 0.8);
+            font-size: 13px;
+            cursor: pointer;
+            border: 1.5px solid rgba(255, 215, 0, 0.4);
+            background: rgba(255, 215, 0, 0.08);
+            padding: 5px 14px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .navbar .verify-btn:hover {
+            color: #ffd700;
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        /* 详情页删除按钮 */
+        .detail-delete-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #ff6464;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 5px 12px;
+            border: 1px solid rgba(255, 60, 60, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 60, 60, 0.08);
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .detail-delete-btn:hover {
+            background: rgba(255, 60, 60, 0.2);
+            border-color: #ff6464;
+        }
+
         /* ===== 响应式 ===== */
         @media (max-width: 600px) {
             .blog-header h1 {
@@ -1054,6 +1094,7 @@
                 <span class="status-dot" id="authDot"></span>
                 <span class="status-text" id="authText">未认证</span>
             </div>
+            <button class="verify-btn" id="verifyBtn">🔓 验证密钥</button>
             <button class="token-config-btn" id="tokenConfigBtn" title="配置 GitHub Token">🔑 Token</button>
             <a href="index.html" class="back-btn">返回矿工</a>
         </div>
@@ -1083,8 +1124,8 @@
         </div>
     </div>
 
-    <!-- 写文章按钮 -->
-    <button class="write-btn" id="writeBtn" title="写文章">✏️</button>
+    <!-- 写文章按钮（认证后才显示） -->
+    <button class="write-btn" id="writeBtn" title="写文章" style="display:none">✏️</button>
 
     <!-- 密码认证弹窗 -->
     <div class="auth-modal" id="authModal">
@@ -1224,6 +1265,8 @@
             updateAuthUI();
         }
 
+        let appReady = false; // 防止 init 阶段 updateAuthUI 触发 renderList
+
         // 更新认证状态UI
         function updateAuthUI() {
             const dot = document.getElementById('authDot');
@@ -1247,6 +1290,19 @@
                 text.textContent = '未认证';
                 const logoutBtn = status.querySelector('.logout-btn');
                 if (logoutBtn) logoutBtn.remove();
+            }
+
+            // 切换 "写文章" 按钮可见性
+            const writeBtn = document.getElementById('writeBtn');
+            if (writeBtn) writeBtn.style.display = isAuthenticated ? 'flex' : 'none';
+
+            // 切换 "验证密钥" 按钮可见性
+            const verifyBtn = document.getElementById('verifyBtn');
+            if (verifyBtn) verifyBtn.style.display = isAuthenticated ? 'none' : '';
+
+            // 重新渲染列表以刷新删除按钮可见性
+            if (appReady) {
+                renderList();
             }
         }
 
@@ -1375,6 +1431,28 @@
             return await resp.json();
         }
 
+        // GitHub API: 删除文件
+        async function ghDeleteFile(path, sha) {
+            const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': getAuthHeader(),
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `🗑️ 删除文件: ${path}`,
+                    sha,
+                    branch: GITHUB_BRANCH
+                })
+            });
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.message || `GitHub API 错误: ${resp.status}`);
+            }
+            return await resp.json();
+        }
+
         // 生成 slug（标题转文件名）
         function titleToSlug(title) {
             return title
@@ -1437,6 +1515,35 @@
             );
 
             return slug;
+        }
+
+        // 从 GitHub 仓库删除文章
+        async function deleteFromRepo(slug) {
+            const token = getToken();
+            if (!token) throw new Error('请先配置 GitHub Token');
+
+            const mdPath = `posts/${slug}.md`;
+            const indexPath = 'posts/index.json';
+
+            // 1. 删除 MD 文件
+            const mdFile = await ghGetFile(mdPath);
+            if (mdFile) {
+                await ghDeleteFile(mdPath, mdFile.sha);
+            }
+
+            // 2. 更新 index.json —— 移除该条目
+            const indexFile = await ghGetFile(indexPath);
+            if (indexFile) {
+                const decoded = decodeURIComponent(escape(atob(indexFile.content.replace(/\n/g, ''))));
+                let indexArr = JSON.parse(decoded);
+                indexArr = indexArr.filter(item => item.slug !== slug);
+                await ghPutFile(
+                    indexPath,
+                    JSON.stringify(indexArr, null, 4) + '\n',
+                    `🗑️ 删除文章索引: ${slug}`,
+                    indexFile.sha
+                );
+            }
         }
 
         // Token 配置弹窗逻辑
@@ -1658,9 +1765,9 @@
 
             container.innerHTML = sorted.map(post => `
                 <div class="post-card" data-id="${post.id}">
-                    ${!post.isPublished ? `<div class="card-actions">
-                        <button class="edit-btn" data-edit="${post.id}" title="编辑草稿">✎</button>
-                        <button class="delete-btn" data-delete="${post.id}" title="删除草稿">✕</button>
+                    ${isAuthenticated ? `<div class="card-actions">
+                        ${!post.isPublished ? `<button class="edit-btn" data-edit="${post.id}" title="编辑草稿">✎</button>` : ''}
+                        <button class="delete-btn" data-delete="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}" title="删除">✕</button>
                     </div>` : ''}
                     <div class="post-meta">
                         <span class="post-date">📅 ${post.date}</span>
@@ -1694,22 +1801,43 @@
                 });
             });
 
-            // 删除按钮（仅草稿）
+            // 删除按钮（草稿 + 已发布）
             container.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const id = Number(btn.dataset.delete);
+                    const rawId = btn.dataset.delete;
+                    const isPublished = btn.dataset.published === '1';
+                    const slug = btn.dataset.slug;
 
                     const authed = await requireAuth();
                     if (!authed) return;
 
-                    if (confirm('确定要删除这篇草稿吗？')) {
-                        draftPosts = draftPosts.filter(p => p.id !== id);
+                    if (isPublished) {
+                        // 删除已发布文章（GitHub API）
+                        if (!getToken()) {
+                            alert('请先配置 GitHub Token（点击导航栏的 🔑 Token 按钮）');
+                            return;
+                        }
+                        if (!confirm('确定要从仓库中删除这篇已发布文章吗？此操作不可撤销。')) return;
+                        try {
+                            await deleteFromRepo(slug);
+                            publishedPosts = publishedPosts.filter(p => p.slug !== slug);
+                            alert('✅ 文章已从仓库删除，GitHub Pages 会在几分钟内更新。');
+                        } catch (err) {
+                            alert('❌ 删除失败: ' + err.message);
+                            return;
+                        }
+                    } else {
+                        // 删除本地草稿
+                        const numId = Number(rawId);
+                        if (!confirm('确定要删除这篇草稿吗？')) return;
+                        draftPosts = draftPosts.filter(p => p.id !== numId);
                         saveDrafts();
-                        refreshPosts();
-                        renderTags();
-                        renderList();
                     }
+
+                    refreshPosts();
+                    renderTags();
+                    renderList();
                 });
             });
         }
@@ -1736,7 +1864,8 @@
                 <div class="detail-header">
                     <div class="back-to-list" id="backToList">← 返回列表</div>
                     <h1>${escapeHtml(post.title)}
-                        ${!post.isPublished ? `<button class="detail-edit-btn" id="detailEditBtn" data-id="${post.id}">✎ 编辑</button>` : ''}
+                        ${isAuthenticated && !post.isPublished ? `<button class="detail-edit-btn" id="detailEditBtn" data-id="${post.id}">✎ 编辑</button>` : ''}
+                        ${isAuthenticated ? `<button class="detail-delete-btn" id="detailDeleteBtn" data-id="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}">🗑 删除</button>` : ''}
                     </h1>
                     <div class="meta-row">
                         <span>📅 ${post.date}</span>
@@ -1761,6 +1890,42 @@
                     const authed = await requireAuth();
                     if (!authed) return;
                     openEditor(post.id);
+                });
+            }
+
+            const delBtn = document.getElementById('detailDeleteBtn');
+            if (delBtn) {
+                delBtn.addEventListener('click', async () => {
+                    const authed = await requireAuth();
+                    if (!authed) return;
+
+                    const isPublished = delBtn.dataset.published === '1';
+                    const slug = delBtn.dataset.slug;
+
+                    if (isPublished) {
+                        if (!getToken()) {
+                            alert('请先配置 GitHub Token（点击导航栏的 🔑 Token 按钮）');
+                            return;
+                        }
+                        if (!confirm('确定要从仓库中删除这篇已发布文章吗？此操作不可撤销。')) return;
+                        try {
+                            await deleteFromRepo(slug);
+                            publishedPosts = publishedPosts.filter(p => p.slug !== slug);
+                            alert('✅ 文章已从仓库删除');
+                        } catch (err) {
+                            alert('❌ 删除失败: ' + err.message);
+                            return;
+                        }
+                    } else {
+                        if (!confirm('确定要删除这篇草稿吗？')) return;
+                        draftPosts = draftPosts.filter(p => p.id !== post.id);
+                        saveDrafts();
+                    }
+
+                    refreshPosts();
+                    renderTags();
+                    renderList();
+                    window.scrollTo(0, 0);
                 });
             }
 
@@ -1946,11 +2111,18 @@
         async function init() {
             updateAuthUI();
             initTokenModal();
+
+            // 验证密钥按钮
+            document.getElementById('verifyBtn').addEventListener('click', async () => {
+                await requireAuth();
+            });
+
             draftPosts = loadDrafts();
             await loadPublishedIndex();
             refreshPosts();
             renderTags();
             renderList();
+            appReady = true;
         }
         init();
     </script>
