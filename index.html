@@ -1,11 +1,706 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zebra's Hub</title>
-</head>
-<body>
+    <title>Zebra's Hub - 黄金矿工</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            background: #1a0a2e;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            cursor: default;
+            user-select: none;
+        }
+
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        #tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.85);
+            color: #ffd700;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            border: 1px solid #ffd700;
+            white-space: nowrap;
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 215, 0, 0.7);
+            font-size: 14px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 50;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        #score-display {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            color: #ffd700;
+            font-size: 22px;
+            font-weight: bold;
+            z-index: 50;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        #title-text {
+            position: fixed;
+            top: 12px;
+            left: 20px;
+            color: #ffd700;
+            font-size: 26px;
+            font-weight: bold;
+            z-index: 50;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        #link-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        #link-modal .modal-content {
+            background: linear-gradient(135deg, #2a1a4e 0%, #1a0a2e 100%);
+            border: 2px solid #ffd700;
+            border-radius: 16px;
+            padding: 30px 40px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            max-width: 400px;
+        }
+
+        #link-modal .modal-content h2 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        #link-modal .modal-content p {
+            color: #ccc;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        #link-modal .modal-content .btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        #link-modal .modal-content button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        #link-modal .modal-content .btn-open {
+            background: #ffd700;
+            color: #1a0a2e;
+        }
+
+        #link-modal .modal-content .btn-open:hover {
+            background: #ffed4a;
+            transform: scale(1.05);
+        }
+
+        #link-modal .modal-content .btn-cancel {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ccc;
+        }
+
+        #link-modal .modal-content .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="title-text">⛏️ Zebra's 黄金矿工</div>
+    <div id="score-display">💰 得分: 0</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="tooltip"></div>
+    <div id="instructions">按 <b>空格键</b> 或 <b>点击屏幕</b> 释放钩爪抓取宝物 | 抓到宝物可打开对应页面</div>
+    <div id="link-modal">
+        <div class="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-desc"></p>
+            <div class="btn-row">
+                <button class="btn-open" id="modal-open">🚀 打开页面</button>
+                <button class="btn-cancel" id="modal-cancel">继续挖矿</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ 游戏配置 ============
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        const scoreDisplay = document.getElementById('score-display');
+
+        // 可抓取的物品 - 每个物品对应一个链接
+        const ITEMS_CONFIG = [
+            { type: 'gold_large', label: 'GitHub', url: 'https://github.com/Zebra1111', value: 500, icon: '🥇', size: 50, desc: '我的 GitHub 主页' },
+            { type: 'gold_medium', label: '博客', url: 'https://blog.example.com', value: 350, icon: '📝', size: 40, desc: '我的技术博客' },
+            { type: 'diamond', label: '项目展示', url: 'https://github.com/Zebra1111?tab=repositories', value: 800, icon: '💎', size: 35, desc: '查看我的开源项目' },
+            { type: 'gold_small', label: '掘金', url: 'https://juejin.cn', value: 250, icon: '🪙', size: 32, desc: '掘金社区' },
+            { type: 'stone', label: 'B站', url: 'https://bilibili.com', value: 100, icon: '📺', size: 48, desc: '哔哩哔哩主页' },
+            { type: 'emerald', label: '简历', url: '#resume', value: 600, icon: '💚', size: 34, desc: '我的在线简历' },
+            { type: 'ruby', label: '联系我', url: 'mailto:example@email.com', value: 700, icon: '❤️', size: 36, desc: '发送邮件联系我' },
+            { type: 'gold_medium', label: 'Twitter/X', url: 'https://x.com', value: 300, icon: '🐦', size: 38, desc: '我的推特' },
+            { type: 'sapphire', label: '知乎', url: 'https://zhihu.com', value: 400, icon: '💙', size: 33, desc: '知乎主页' },
+            { type: 'gold_small', label: 'LeetCode', url: 'https://leetcode.cn', value: 200, icon: '🧩', size: 30, desc: '力扣刷题记录' },
+        ];
+
+        // ============ 游戏状态 ============
+        let W, H;
+        let score = 0;
+        let items = [];
+        let particles = [];
+        let stars = [];
+
+        // 矿工/钩爪状态
+        const miner = {
+            x: 0, y: 0,
+            angle: 0,
+            angleSpeed: 0.02,
+            angleDir: 1,
+            ropeLen: 40,
+            maxRopeLen: 0,
+            state: 'swinging', // swinging | extending | retracting
+            speed: 6,
+            retractSpeed: 3,
+            grabbed: null,
+            hookX: 0,
+            hookY: 0,
+        };
+
+        // ============ 初始化 ============
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+            miner.x = W / 2;
+            miner.y = 90;
+            miner.maxRopeLen = H - 100;
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 60; i++) {
+                stars.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    r: Math.random() * 1.5 + 0.5,
+                    alpha: Math.random() * 0.5 + 0.2,
+                    twinkleSpeed: Math.random() * 0.02 + 0.005,
+                    twinklePhase: Math.random() * Math.PI * 2,
+                });
+            }
+        }
+
+        function spawnItems() {
+            items = [];
+            const margin = 80;
+            const groundY = 160;
+            const usedPositions = [];
+
+            ITEMS_CONFIG.forEach(cfg => {
+                let x, y, attempts = 0;
+                do {
+                    x = margin + Math.random() * (W - margin * 2);
+                    y = groundY + Math.random() * (H - groundY - margin);
+                    attempts++;
+                } while (attempts < 100 && usedPositions.some(p =>
+                    Math.hypot(p.x - x, p.y - y) < 80
+                ));
+                usedPositions.push({ x, y });
+
+                items.push({
+                    ...cfg,
+                    x, y,
+                    baseY: y,
+                    phase: Math.random() * Math.PI * 2,
+                    alive: true,
+                    grabAnim: 0,
+                });
+            });
+        }
+
+        // ============ 绘制函数 ============
+        function drawBackground() {
+            // 深色渐变背景
+            const grad = ctx.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, '#0d0521');
+            grad.addColorStop(0.3, '#1a0a2e');
+            grad.addColorStop(1, '#0a1628');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            // 星星
+            const now = performance.now() / 1000;
+            stars.forEach(s => {
+                const a = s.alpha + Math.sin(now * s.twinkleSpeed * 10 + s.twinklePhase) * 0.2;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,200,${Math.max(0, a)})`;
+                ctx.fill();
+            });
+
+            // 地面线
+            const groundY = 130;
+            ctx.strokeStyle = 'rgba(255,215,0,0.15)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(W, groundY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 地面泥土纹理
+            for (let i = 0; i < W; i += 3) {
+                const dy = Math.sin(i * 0.05) * 2;
+                const alpha = 0.03 + Math.random() * 0.02;
+                ctx.fillStyle = `rgba(139,90,43,${alpha})`;
+                ctx.fillRect(i, groundY + dy, 2, H - groundY);
+            }
+        }
+
+        function drawMiner() {
+            const mx = miner.x;
+            const my = miner.y;
+
+            // 矿工平台
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(mx - 40, my - 30, 80, 12);
+            ctx.fillStyle = '#A0522D';
+            ctx.fillRect(mx - 36, my - 28, 72, 8);
+
+            // 矿工身体
+            ctx.save();
+            ctx.translate(mx, my - 40);
+
+            // 身体
+            ctx.fillStyle = '#e8a838';
+            ctx.fillRect(-10, 0, 20, 18);
+
+            // 头
+            ctx.fillStyle = '#ffcc88';
+            ctx.beginPath();
+            ctx.arc(0, -5, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 安全帽
+            ctx.fillStyle = '#ffd700';
+            ctx.beginPath();
+            ctx.ellipse(0, -12, 14, 7, 0, Math.PI, 0);
+            ctx.fill();
+            ctx.fillStyle = '#ffed4a';
+            ctx.fillRect(-5, -17, 10, 5);
+
+            // 头灯
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(0, -15, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 眼睛 - 看向钩爪方向
+            const lookDir = miner.angle > 0 ? 1 : -1;
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(-4 + lookDir, -5, 1.5, 0, Math.PI * 2);
+            ctx.arc(4 + lookDir, -5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawRopeAndHook() {
+            const startX = miner.x;
+            const startY = miner.y;
+            const endX = miner.hookX;
+            const endY = miner.hookY;
+
+            // 绳索
+            ctx.strokeStyle = '#c8a850';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+
+            // 钩爪
+            ctx.save();
+            ctx.translate(endX, endY);
+            const angle = Math.atan2(endY - startY, endX - startX);
+            ctx.rotate(angle);
+
+            // 钩爪主体
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+
+            if (miner.grabbed) {
+                // 抓住物品时钩爪闭合
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(12, 4);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(12, -4);
+                ctx.stroke();
+            } else {
+                // 钩爪张开
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(14, 8);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(14, -8);
+                ctx.stroke();
+            }
+
+            // 钩爪中心
+            ctx.fillStyle = '#aaa';
+            ctx.beginPath();
+            ctx.arc(0, 0, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawItem(item) {
+            if (!item.alive) return;
+
+            const now = performance.now() / 1000;
+            const floatY = item.y + Math.sin(now * 1.5 + item.phase) * 3;
+
+            ctx.save();
+            ctx.translate(item.x, floatY);
+
+            // 光晕
+            const glowColors = {
+                'gold_large': 'rgba(255,215,0,0.15)',
+                'gold_medium': 'rgba(255,215,0,0.12)',
+                'gold_small': 'rgba(255,215,0,0.10)',
+                'diamond': 'rgba(185,242,255,0.2)',
+                'emerald': 'rgba(80,200,120,0.18)',
+                'ruby': 'rgba(255,80,80,0.18)',
+                'sapphire': 'rgba(80,120,255,0.18)',
+                'stone': 'rgba(150,150,150,0.08)',
+            };
+            const glow = glowColors[item.type] || 'rgba(255,255,255,0.1)';
+            const glowSize = item.size * 1.6 + Math.sin(now * 2 + item.phase) * 5;
+            const glowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+            glowGrad.addColorStop(0, glow);
+            glowGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(-glowSize, -glowSize, glowSize * 2, glowSize * 2);
+
+            // 物品图标
+            ctx.font = `${item.size}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(item.icon, 0, 0);
+
+            // 标签
+            ctx.font = 'bold 12px "Microsoft YaHei", sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.textAlign = 'center';
+
+            // 标签背景
+            const labelWidth = ctx.measureText(item.label).width + 12;
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            roundRect(ctx, -labelWidth / 2, item.size / 2 + 4, labelWidth, 20, 6);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff';
+            ctx.fillText(item.label, 0, item.size / 2 + 14);
+
+            // 价值标签
+            ctx.font = '10px "Microsoft YaHei", sans-serif';
+            ctx.fillStyle = '#ffd700';
+            ctx.fillText(`$${item.value}`, 0, item.size / 2 + 28);
+
+            ctx.restore();
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        // ============ 粒子效果 ============
+        function spawnParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    r: Math.random() * 3 + 1,
+                    life: 1,
+                    decay: Math.random() * 0.03 + 0.02,
+                    color: color,
+                });
+            }
+        }
+
+        // ============ 游戏逻辑 ============
+        function updateMiner() {
+            if (miner.state === 'swinging') {
+                miner.angle += miner.angleSpeed * miner.angleDir;
+                if (miner.angle > Math.PI / 2.5) miner.angleDir = -1;
+                if (miner.angle < -Math.PI / 2.5) miner.angleDir = 1;
+                miner.ropeLen = 40;
+            }
+            else if (miner.state === 'extending') {
+                miner.ropeLen += miner.speed;
+
+                // 检查碰撞
+                for (const item of items) {
+                    if (!item.alive) continue;
+                    const dist = Math.hypot(miner.hookX - item.x, miner.hookY - item.y);
+                    if (dist < item.size / 2 + 15) {
+                        // 抓到了!
+                        miner.grabbed = item;
+                        item.alive = false;
+                        miner.state = 'retracting';
+
+                        // 根据物品大小调整回收速度
+                        const sizeRatio = item.size / 50;
+                        miner.retractSpeed = Math.max(2, 5 - sizeRatio * 2);
+
+                        spawnParticles(item.x, item.y, '#ffd700', 15);
+                        return;
+                    }
+                }
+
+                // 到达最大长度
+                if (miner.ropeLen >= miner.maxRopeLen) {
+                    miner.state = 'retracting';
+                    miner.retractSpeed = 6;
+                }
+            }
+            else if (miner.state === 'retracting') {
+                miner.ropeLen -= miner.retractSpeed;
+
+                if (miner.ropeLen <= 40) {
+                    miner.ropeLen = 40;
+                    miner.state = 'swinging';
+
+                    if (miner.grabbed) {
+                        const item = miner.grabbed;
+                        score += item.value;
+                        scoreDisplay.textContent = `💰 得分: ${score}`;
+                        spawnParticles(miner.x, miner.y, '#ffd700', 25);
+
+                        // 显示链接弹窗
+                        showLinkModal(item);
+
+                        miner.grabbed = null;
+                    }
+                }
+            }
+
+            // 计算钩爪位置
+            miner.hookX = miner.x + Math.sin(miner.angle) * miner.ropeLen;
+            miner.hookY = miner.y + Math.cos(miner.angle) * miner.ropeLen;
+
+            // 被抓物品跟随钩爪
+            if (miner.grabbed) {
+                miner.grabbed.x = miner.hookX;
+                miner.grabbed.y = miner.hookY;
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1;
+                p.life -= p.decay;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        // ============ 链接弹窗 ============
+        function showLinkModal(item) {
+            const modal = document.getElementById('link-modal');
+            document.getElementById('modal-title').textContent = `${item.icon} ${item.label}`;
+            document.getElementById('modal-desc').textContent = item.desc;
+
+            const openBtn = document.getElementById('modal-open');
+            const cancelBtn = document.getElementById('modal-cancel');
+
+            modal.style.display = 'flex';
+
+            // 清理旧事件
+            const newOpenBtn = openBtn.cloneNode(true);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+            newOpenBtn.addEventListener('click', () => {
+                window.open(item.url, '_blank');
+                modal.style.display = 'none';
+            });
+
+            newCancelBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // ============ 鼠标悬停提示 ============
+        canvas.addEventListener('mousemove', (e) => {
+            let found = false;
+            for (const item of items) {
+                if (!item.alive) continue;
+                const now = performance.now() / 1000;
+                const floatY = item.y + Math.sin(now * 1.5 + item.phase) * 3;
+                const dist = Math.hypot(e.clientX - item.x, e.clientY - floatY);
+                if (dist < item.size / 2 + 10) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY - 10) + 'px';
+                    tooltip.textContent = `${item.icon} ${item.label} — $${item.value}`;
+                    canvas.style.cursor = 'pointer';
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                tooltip.style.display = 'none';
+                canvas.style.cursor = 'default';
+            }
+        });
+
+        // ============ 输入控制 ============
+        function launchHook() {
+            if (miner.state === 'swinging') {
+                miner.state = 'extending';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                launchHook();
+            }
+            // R键重新开始
+            if (e.code === 'KeyR') {
+                resetGame();
+            }
+        });
+
+        canvas.addEventListener('click', () => {
+            launchHook();
+        });
+
+        // ============ 重置游戏 ============
+        function resetGame() {
+            score = 0;
+            scoreDisplay.textContent = `💰 得分: 0`;
+            miner.state = 'swinging';
+            miner.grabbed = null;
+            miner.angle = 0;
+            miner.ropeLen = 40;
+            particles = [];
+            spawnItems();
+        }
+
+        // 检测所有物品是否都被抓走
+        function checkAllGrabbed() {
+            if (miner.state === 'swinging' && items.every(i => !i.alive)) {
+                // 全部抓完,重新生成
+                setTimeout(() => {
+                    spawnParticles(W / 2, H / 2, '#ffd700', 50);
+                    spawnItems();
+                }, 500);
+            }
+        }
+
+        // ============ 主循环 ============
+        function gameLoop() {
+            drawBackground();
+            items.forEach(drawItem);
+            drawParticles();
+            drawMiner();
+            drawRopeAndHook();
+
+            updateMiner();
+            updateParticles();
+            checkAllGrabbed();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ============ 启动 ============
+        window.addEventListener('resize', () => {
+            resize();
+            initStars();
+            spawnItems();
+        });
+
+        resize();
+        initStars();
+        spawnItems();
+        gameLoop();
+    </script>
 </body>
+
 </html>
