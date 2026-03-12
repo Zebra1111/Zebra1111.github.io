@@ -460,11 +460,6 @@
             ctx.fillStyle = '#fff';
             ctx.fillText(item.label, 0, item.size / 2 + 14);
 
-            // 价值标签
-            ctx.font = '10px "Microsoft YaHei", sans-serif';
-            ctx.fillStyle = '#ffd700';
-            ctx.fillText(`$${item.value}`, 0, item.size / 2 + 28);
-
             ctx.restore();
         }
 
@@ -624,7 +619,7 @@
                     tooltip.style.display = 'block';
                     tooltip.style.left = (e.clientX + 15) + 'px';
                     tooltip.style.top = (e.clientY - 10) + 'px';
-                    tooltip.textContent = `${item.icon} ${item.label} — $${item.value}`;
+                    tooltip.textContent = `${item.icon} ${item.label}`;
                     canvas.style.cursor = 'pointer';
                     found = true;
                     break;
