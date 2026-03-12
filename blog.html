@@ -1677,8 +1677,9 @@
             container.querySelectorAll('.post-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('.delete-btn') || e.target.closest('.edit-btn')) return;
-                    const id = Number(card.dataset.id);
-                    showDetail(id);
+                    const id = card.dataset.id;
+                    // 草稿 id 是数字，已发布是字符串 'pub_xxx'
+                    showDetail(isNaN(id) ? id : Number(id));
                 });
             });
 
@@ -1890,13 +1891,31 @@
                     saveDrafts();
                 }
 
+                // 立即在内存中添加/更新已发布文章，无需等待 GitHub Pages 部署
+                const pubId = 'pub_' + slug;
+                const existingIdx = publishedPosts.findIndex(p => p.id === pubId);
+                const newPubPost = {
+                    id: pubId,
+                    slug: slug,
+                    title: title,
+                    tag: tag || '未分类',
+                    summary: summary || title,
+                    date: date,
+                    timestamp: Date.now(),
+                    isPublished: true,
+                    content: content
+                };
+                if (existingIdx >= 0) {
+                    publishedPosts[existingIdx] = newPubPost;
+                } else {
+                    publishedPosts.unshift(newPubPost);
+                }
+
                 editorModal.classList.remove('visible');
                 editingPostId = null;
 
                 alert(`✅ 文章已发布到仓库！\n\n文件: posts/${slug}.md\nGitHub Pages 会在几分钟内自动更新。`);
 
-                // 重新加载已发布文章索引
-                await loadPublishedIndex();
                 currentFilter = 'all';
                 refreshPosts();
                 renderTags();
