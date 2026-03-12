@@ -154,15 +154,101 @@
         #link-modal .modal-content .btn-cancel:hover {
             background: rgba(255, 255, 255, 0.25);
         }
+
+        #score-display {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffd700;
+            font-size: 22px;
+            font-weight: bold;
+            z-index: 50;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #score-display .score-label {
+            font-size: 14px;
+            color: rgba(255, 215, 0, 0.6);
+        }
+
+        #gameover-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+        }
+
+        #gameover-modal .gameover-content {
+            background: linear-gradient(135deg, #4e1a1a 0%, #2e0a0a 100%);
+            border: 2px solid #ff4444;
+            border-radius: 16px;
+            padding: 40px 50px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(255, 68, 68, 0.4);
+            max-width: 420px;
+        }
+
+        #gameover-modal .gameover-content .boom-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        #gameover-modal .gameover-content h2 {
+            color: #ff4444;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+        }
+
+        #gameover-modal .gameover-content p {
+            color: #ccc;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        #gameover-modal .gameover-content .final-score {
+            color: #ffd700;
+            font-size: 22px;
+            font-weight: bold;
+            margin: 12px 0 20px;
+        }
+
+        #gameover-modal .gameover-content button {
+            padding: 12px 36px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #ff4444;
+            color: #fff;
+            transition: all 0.2s;
+        }
+
+        #gameover-modal .gameover-content button:hover {
+            background: #ff6666;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 
 <body>
     <div id="title-text">⛏️ Zebra's 黄金矿工</div>
+    <div id="score-display"><span class="score-label">💰 得分:</span> <span id="score-value">0</span></div>
     <button id="restart-btn" onclick="resetGame()">🔄 重新开始</button>
     <canvas id="gameCanvas"></canvas>
     <div id="tooltip"></div>
-    <div id="instructions">按 <b>空格键</b> 或 <b>点击屏幕</b> 释放钩爪抓取宝物 | 抓到宝物可打开对应页面</div>
+    <div id="instructions">按 <b>空格键</b> 或 <b>点击屏幕</b> 释放钩爪抓取宝物 | 抓到宝物可打开对应页面 | ⚠️ 小心炸弹！</div>
     <div id="link-modal">
         <div class="modal-content">
             <h2 id="modal-title"></h2>
@@ -171,6 +257,15 @@
                 <button class="btn-open" id="modal-open">🚀 打开页面</button>
                 <button class="btn-cancel" id="modal-cancel">继续挖矿</button>
             </div>
+        </div>
+    </div>
+    <div id="gameover-modal">
+        <div class="gameover-content">
+            <div class="boom-icon">💥</div>
+            <h2>游戏结束!</h2>
+            <p>你抓到了炸弹...</p>
+            <div class="final-score">最终得分: <span id="gameover-score">0</span></div>
+            <button onclick="document.getElementById('gameover-modal').style.display='none'; resetGame();">🔄 重新开始</button>
         </div>
     </div>
 
@@ -182,23 +277,45 @@
 
 
         // 可抓取的物品 - 每个物品对应一个链接
-        const ITEMS_CONFIG = [
-            { type: 'gold_large', label: 'GitHub', url: 'https://github.com/Zebra1111', icon: '🥇', size: 50, desc: '我的 GitHub 主页' },
-            { type: 'gold_medium', label: '博客', url: 'blog.html', icon: '📝', size: 40, desc: '我的技术博客' },
-            { type: 'diamond', label: '项目展示', url: 'https://github.com/Zebra1111?tab=repositories', icon: '💎', size: 35, desc: '查看我的开源项目' },
-            { type: 'stone', label: 'B站', url: 'https://bilibili.com', icon: '📺', size: 48, desc: '哔哩哔哩主页' },
-            { type: 'emerald', label: '简历', url: '#resume', icon: '💚', size: 34, desc: '我的在线简历' },
-            { type: 'ruby', label: '联系我', url: 'mailto:example@email.com', icon: '❤️', size: 36, desc: '发送邮件联系我' },
-            { type: 'gold_medium', label: 'Twitter/X', url: 'https://x.com', icon: '🐦', size: 38, desc: '我的推特' },
-            { type: 'sapphire', label: '知乎', url: 'https://zhihu.com', icon: '💙', size: 33, desc: '知乎主页' },
-            { type: 'gold_small', label: 'LeetCode', url: 'https://leetcode.cn', icon: '🧩', size: 30, desc: '力扣刷题记录' },
+        const LINK_ITEMS = [
+            { type: 'gold_large', label: 'GitHub', url: 'https://github.com/Zebra1111', icon: '🥇', size: 50, value: 300, desc: '我的 GitHub 主页' },
+            { type: 'gold_medium', label: '博客', url: 'blog.html', icon: '📝', size: 40, value: 200, desc: '我的技术博客' },
+            { type: 'diamond', label: '项目展示', url: 'https://github.com/Zebra1111?tab=repositories', icon: '💎', size: 35, value: 500, desc: '查看我的开源项目' },
+            { type: 'stone', label: 'B站', url: 'https://bilibili.com', icon: '📺', size: 48, value: 50, desc: '哔哩哔哩主页' },
+            { type: 'emerald', label: '简历', url: '#resume', icon: '💚', size: 34, value: 250, desc: '我的在线简历' },
+            { type: 'ruby', label: '联系我', url: 'mailto:example@email.com', icon: '❤️', size: 36, value: 350, desc: '发送邮件联系我' },
+            { type: 'gold_medium', label: 'Twitter/X', url: 'https://x.com', icon: '🐦', size: 38, value: 150, desc: '我的推特' },
+            { type: 'sapphire', label: '知乎', url: 'https://zhihu.com', icon: '💙', size: 33, value: 200, desc: '知乎主页' },
+            { type: 'gold_small', label: 'LeetCode', url: 'https://leetcode.cn', icon: '🧩', size: 30, value: 400, desc: '力扣刷题记录' },
         ];
+
+        // 随机数量的黄金、石头、炸弹
+        const RANDOM_ITEMS = [
+            { type: 'gold_large', label: '大黄金', icon: '🪙', size: 50, value: 500, desc: '价值连城的大黄金!' },
+            { type: 'gold_medium', label: '中黄金', icon: '✨', size: 40, value: 250, desc: '闪闪发光的黄金' },
+            { type: 'gold_small', label: '小黄金', icon: '⭐', size: 30, value: 100, desc: '一小块黄金' },
+            { type: 'stone', label: '石头', icon: '🪨', size: 48, value: 10, desc: '不值钱的石头' },
+            { type: 'bomb', label: '炸弹', icon: '💣', size: 38, value: 0, desc: '危险! 小心爆炸!' },
+        ];
+
+        function generateItemsConfig() {
+            const config = [...LINK_ITEMS];
+            RANDOM_ITEMS.forEach(item => {
+                const count = Math.floor(Math.random() * 4) + 1; // 1-4个
+                for (let i = 0; i < count; i++) {
+                    config.push({ ...item });
+                }
+            });
+            return config;
+        }
 
         // ============ 游戏状态 ============
         let W, H;
         let items = [];
         let particles = [];
         let stars = [];
+        let score = 0;
+        let gameOver = false;
 
         // 矿工/钩爪状态
         const miner = {
@@ -239,13 +356,18 @@
             }
         }
 
+        function updateScoreDisplay() {
+            document.getElementById('score-value').textContent = score;
+        }
+
         function spawnItems() {
             items = [];
             const margin = 80;
             const groundY = 160;
             const usedPositions = [];
+            const currentConfig = generateItemsConfig();
 
-            ITEMS_CONFIG.forEach(cfg => {
+            currentConfig.forEach(cfg => {
                 let x, y, attempts = 0;
                 do {
                     x = margin + Math.random() * (W - margin * 2);
@@ -431,6 +553,7 @@
                 'ruby': 'rgba(255,80,80,0.18)',
                 'sapphire': 'rgba(80,120,255,0.18)',
                 'stone': 'rgba(150,150,150,0.08)',
+                'bomb': 'rgba(255,60,60,0.2)',
             };
             const glow = glowColors[item.type] || 'rgba(255,255,255,0.1)';
             const glowSize = item.size * 1.6 + Math.sin(now * 2 + item.phase) * 5;
@@ -459,6 +582,13 @@
 
             ctx.fillStyle = '#fff';
             ctx.fillText(item.label, 0, item.size / 2 + 14);
+
+            // 显示价值
+            if (item.value && item.type !== 'bomb') {
+                ctx.font = '10px "Microsoft YaHei", sans-serif';
+                ctx.fillStyle = 'rgba(255,215,0,0.8)';
+                ctx.fillText('$' + item.value, 0, item.size / 2 + 28);
+            }
 
             ctx.restore();
         }
@@ -504,7 +634,20 @@
         }
 
         // ============ 游戏逻辑 ============
+        function triggerGameOver() {
+            gameOver = true;
+            miner.state = 'swinging';
+            miner.grabbed = null;
+            miner.ropeLen = 40;
+            document.getElementById('gameover-score').textContent = score;
+            document.getElementById('gameover-modal').style.display = 'flex';
+            // 红色爆炸粒子
+            spawnParticles(miner.hookX, miner.hookY, '#ff4444', 40);
+            spawnParticles(miner.hookX, miner.hookY, '#ff8800', 30);
+        }
+
         function updateMiner() {
+            if (gameOver) return;
             if (miner.state === 'swinging') {
                 miner.angle += miner.angleSpeed * miner.angleDir;
                 if (miner.angle > Math.PI / 2.5) miner.angleDir = -1;
@@ -548,10 +691,23 @@
 
                     if (miner.grabbed) {
                         const item = miner.grabbed;
+
+                        // 检查是否是炸弹
+                        if (item.type === 'bomb') {
+                            triggerGameOver();
+                            return;
+                        }
+
                         spawnParticles(miner.x, miner.y, '#ffd700', 25);
 
-                        // 显示链接弹窗
-                        showLinkModal(item);
+                        // 加分
+                        score += item.value || 0;
+                        updateScoreDisplay();
+
+                        // 有链接的物品显示弹窗
+                        if (item.url) {
+                            showLinkModal(item);
+                        }
 
                         miner.grabbed = null;
                     }
@@ -583,7 +739,7 @@
         // ============ 链接弹窗 ============
         function showLinkModal(item) {
             const modal = document.getElementById('link-modal');
-            document.getElementById('modal-title').textContent = `${item.icon} ${item.label}`;
+            document.getElementById('modal-title').textContent = `${item.icon} ${item.label} (+$${item.value})`;
             document.getElementById('modal-desc').textContent = item.desc;
 
             const openBtn = document.getElementById('modal-open');
@@ -619,7 +775,7 @@
                     tooltip.style.display = 'block';
                     tooltip.style.left = (e.clientX + 15) + 'px';
                     tooltip.style.top = (e.clientY - 10) + 'px';
-                    tooltip.textContent = `${item.icon} ${item.label}`;
+                    tooltip.textContent = `${item.icon} ${item.label}${item.value ? ' $' + item.value : ''}`;
                     canvas.style.cursor = 'pointer';
                     found = true;
                     break;
@@ -633,6 +789,7 @@
 
         // ============ 输入控制 ============
         function launchHook() {
+            if (gameOver) return;
             if (miner.state === 'swinging') {
                 miner.state = 'extending';
             }
@@ -650,14 +807,17 @@
         });
 
         canvas.addEventListener('click', (e) => {
-            // 优先检测是否点击了物品，直接跳转
+            if (gameOver) return;
+            // 优先检测是否点击了物品，弹窗确认跳转
             for (const item of items) {
                 if (!item.alive) continue;
                 const now = performance.now() / 1000;
                 const floatY = item.y + Math.sin(now * 1.5 + item.phase) * 3;
                 const dist = Math.hypot(e.clientX - item.x, e.clientY - floatY);
                 if (dist < item.size / 2 + 10) {
-                    window.open(item.url, '_blank');
+                    if (item.url) {
+                        showLinkModal(item);
+                    }
                     return;
                 }
             }
@@ -666,6 +826,9 @@
 
         // ============ 重置游戏 ============
         function resetGame() {
+            gameOver = false;
+            score = 0;
+            updateScoreDisplay();
             miner.state = 'swinging';
             miner.grabbed = null;
             miner.angle = 0;
