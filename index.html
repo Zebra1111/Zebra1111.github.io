@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zebra's Hub - 黄金矿工</title>
+    <link rel="icon" type="image/png" href="icon/首页.png">
     <style>
         * {
             margin: 0;
@@ -265,7 +266,8 @@
             <h2>游戏结束!</h2>
             <p>你抓到了炸弹...</p>
             <div class="final-score">最终得分: <span id="gameover-score">0</span></div>
-            <button onclick="document.getElementById('gameover-modal').style.display='none'; resetGame();">🔄 重新开始</button>
+            <button onclick="document.getElementById('gameover-modal').style.display='none'; resetGame();">🔄
+                重新开始</button>
         </div>
     </div>
 
@@ -291,10 +293,9 @@
 
         // 随机数量的黄金、石头、炸弹
         const RANDOM_ITEMS = [
-            { type: 'gold_large', label: '大黄金', icon: '🪙', size: 50, value: 500, desc: '价值连城的大黄金!' },
-            { type: 'gold_medium', label: '中黄金', icon: '✨', size: 40, value: 250, desc: '闪闪发光的黄金' },
-            { type: 'gold_small', label: '小黄金', icon: '⭐', size: 30, value: 100, desc: '一小块黄金' },
-            { type: 'stone', label: '石头', icon: '势头', size: 48, value: 10, desc: '不值钱的石头' },
+            { type: 'gold', label: '大黄金', icon: '🪙', iconSrc: 'icon/gold.png', size: 50, value: 500, desc: '价值连城的大黄金!' },
+            { type: 'silver', label: '白银', icon: '✨', iconSrc: 'icon/silver.png', size: 40, value: 250, desc: '闪闪发亮的白银' },
+            { type: 'stone', label: '石头', icon: '🪨', iconSrc: 'icon/stone.png', size: 48, value: 10, desc: '不值钱的石头' },
             { type: 'bomb', label: '炸弹', icon: '💣', size: 38, value: 0, desc: '危险! 小心爆炸!' },
         ];
 
@@ -308,6 +309,20 @@
             });
             return config;
         }
+
+        // ============ 图片预加载 ============
+        const imageCache = {};
+        function preloadImage(src) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => { imageCache[src] = img; resolve(img); };
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
+        // 预加载所有 icon 图片
+        const imageSources = ['icon/gold.png', 'icon/silver.png', 'icon/stone.png'];
+        Promise.all(imageSources.map(preloadImage));
 
         // ============ 游戏状态 ============
         let W, H;
@@ -564,10 +579,15 @@
             ctx.fillRect(-glowSize, -glowSize, glowSize * 2, glowSize * 2);
 
             // 物品图标
-            ctx.font = `${item.size}px serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(item.icon, 0, 0);
+            if (item.iconSrc && imageCache[item.iconSrc]) {
+                const img = imageCache[item.iconSrc];
+                ctx.drawImage(img, -item.size / 2, -item.size / 2, item.size, item.size);
+            } else {
+                ctx.font = `${item.size}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(item.icon, 0, 0);
+            }
 
             // 标签
             ctx.font = 'bold 12px "Microsoft YaHei", sans-serif';
