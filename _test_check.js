@@ -1,191 +1,16 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zebra's Hub - 黄金矿工</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #1a0a2e;
-            overflow: hidden;
-            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-            cursor: default;
-            user-select: none;
-        }
-
-        #gameCanvas {
-            display: block;
-            margin: 0 auto;
-        }
-
-        #tooltip {
-            position: fixed;
-            background: rgba(0, 0, 0, 0.85);
-            color: #ffd700;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            pointer-events: none;
-            display: none;
-            z-index: 100;
-            border: 1px solid #ffd700;
-            white-space: nowrap;
-        }
-
-        #instructions {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 215, 0, 0.7);
-            font-size: 14px;
-            text-align: center;
-            pointer-events: none;
-            z-index: 50;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
-
-        #restart-btn {
-            position: fixed;
-            top: 15px;
-            right: 20px;
-            color: #ffd700;
-            font-size: 16px;
-            font-weight: bold;
-            z-index: 50;
-            background: rgba(255, 215, 0, 0.15);
-            border: 1.5px solid #ffd700;
-            border-radius: 8px;
-            padding: 8px 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
-
-        #restart-btn:hover {
-            background: rgba(255, 215, 0, 0.3);
-            transform: scale(1.05);
-        }
-
-        #title-text {
-            position: fixed;
-            top: 12px;
-            left: 20px;
-            color: #ffd700;
-            font-size: 26px;
-            font-weight: bold;
-            z-index: 50;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-        }
-
-        #link-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-        }
-
-        #link-modal .modal-content {
-            background: linear-gradient(135deg, #2a1a4e 0%, #1a0a2e 100%);
-            border: 2px solid #ffd700;
-            border-radius: 16px;
-            padding: 30px 40px;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
-            max-width: 400px;
-        }
-
-        #link-modal .modal-content h2 {
-            color: #ffd700;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-
-        #link-modal .modal-content p {
-            color: #ccc;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        #link-modal .modal-content .btn-row {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        #link-modal .modal-content button {
-            padding: 10px 28px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        #link-modal .modal-content .btn-open {
-            background: #ffd700;
-            color: #1a0a2e;
-        }
-
-        #link-modal .modal-content .btn-open:hover {
-            background: #ffed4a;
-            transform: scale(1.05);
-        }
-
-        #link-modal .modal-content .btn-cancel {
-            background: rgba(255, 255, 255, 0.15);
-            color: #ccc;
-        }
-
-        #link-modal .modal-content .btn-cancel:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-    </style>
-</head>
-
-<body>
-    <div id="title-text">⛏️ Zebra's 黄金矿工</div>
-    <button id="restart-btn" onclick="resetGame()">🔄 重新开始</button>
-    <canvas id="gameCanvas"></canvas>
-    <div id="tooltip"></div>
-    <div id="instructions">按 <b>空格键</b> 或 <b>点击屏幕</b> 释放钩爪抓取宝物 | 抓到宝物可打开对应页面</div>
-    <div id="link-modal">
-        <div class="modal-content">
-            <h2 id="modal-title"></h2>
-            <p id="modal-desc"></p>
-            <div class="btn-row">
-                <button class="btn-open" id="modal-open">🚀 打开页面</button>
-                <button class="btn-cancel" id="modal-cancel">继续挖矿</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
         // ============ 游戏配置 ============
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const tooltip = document.getElementById('tooltip');
-
+        const scoreDisplay = document.getElementById('score-display');
 
         // 可抓取的物品 - 每个物品对应一个链接
         const ITEMS_CONFIG = [
             { type: 'gold_large', label: 'GitHub', url: 'https://github.com/Zebra1111', value: 500, icon: '🥇', size: 50, desc: '我的 GitHub 主页' },
             { type: 'gold_medium', label: '博客', url: 'https://blog.example.com', value: 350, icon: '📝', size: 40, desc: '我的技术博客' },
             { type: 'diamond', label: '项目展示', url: 'https://github.com/Zebra1111?tab=repositories', value: 800, icon: '💎', size: 35, desc: '查看我的开源项目' },
+            { type: 'gold_small', label: '掘金', url: 'https://juejin.cn', value: 250, icon: '🪙', size: 32, desc: '掘金社区' },
             { type: 'stone', label: 'B站', url: 'https://bilibili.com', value: 100, icon: '📺', size: 48, desc: '哔哩哔哩主页' },
             { type: 'emerald', label: '简历', url: '#resume', value: 600, icon: '💚', size: 34, desc: '我的在线简历' },
             { type: 'ruby', label: '联系我', url: 'mailto:example@email.com', value: 700, icon: '❤️', size: 36, desc: '发送邮件联系我' },
@@ -196,6 +21,7 @@
 
         // ============ 游戏状态 ============
         let W, H;
+        let score = 0;
         let items = [];
         let particles = [];
         let stars = [];
@@ -553,6 +379,8 @@
 
                     if (miner.grabbed) {
                         const item = miner.grabbed;
+                        score += item.value;
+                        scoreDisplay.textContent = `💰 得分: ${score}`;
                         spawnParticles(miner.x, miner.y, '#ffd700', 25);
 
                         // 显示链接弹窗
@@ -660,6 +488,8 @@
 
         // ============ 重置游戏 ============
         function resetGame() {
+            score = 0;
+            scoreDisplay.textContent = `💰 得分: 0`;
             miner.state = 'swinging';
             miner.grabbed = null;
             miner.angle = 0;
@@ -705,7 +535,4 @@
         initStars();
         spawnItems();
         gameLoop();
-    </script>
-</body>
-
-</html>
+    
