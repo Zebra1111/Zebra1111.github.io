@@ -1980,6 +1980,7 @@
             document.querySelector('.blog-header').style.display = '';
             document.getElementById('tagFilter').style.display = '';
             currentView = 'list';
+            if (writeBtn) writeBtn.style.display = isAuthenticated ? 'flex' : 'none';
 
             const filtered = currentFilter === 'all'
                 ? posts
@@ -2112,6 +2113,7 @@
             document.querySelector('.blog-header').style.display = 'none';
             document.getElementById('tagFilter').style.display = 'none';
             currentView = 'detail';
+            if (writeBtn) writeBtn.style.display = 'none';
 
             detail.innerHTML = `
                 <div class="detail-header">
