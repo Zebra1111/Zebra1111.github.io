@@ -2115,7 +2115,6 @@
 
             detail.innerHTML = `
                 <div class="detail-header">
-                    <div class="back-to-list" id="backToList">← 返回列表</div>
                     <h1>${escapeHtml(post.title)}
                         ${isAuthenticated ? `<button class="detail-edit-btn" id="detailEditBtn" data-id="${post.id}" title="${post.isPublished ? '在线编辑并同步仓库' : '编辑草稿'}">✎ 编辑</button>` : ''}
                         ${isAuthenticated ? `<button class="detail-pin-btn" id="detailPinBtn" data-id="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}">${post.pinned ? '📌 取消置顶' : '📌 置顶'}</button>` : ''}
@@ -2131,7 +2130,7 @@
                 <div class="article-content">
                     ${renderMarkdown(content || '')}
                 </div>
-                <button class="floating-back-btn" id="backToListFloating">← 返回列表</button>
+                <button class="floating-back-btn" id="backToListFloating">← 返回Blog</button>
             `;
 
             document.getElementById('backToList').addEventListener('click', () => {
