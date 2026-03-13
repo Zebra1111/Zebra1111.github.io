@@ -114,6 +114,16 @@
             color: #ffd700;
             margin-bottom: 10px;
             font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #link-modal .modal-content h2 img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
         }
 
         #link-modal .modal-content p {
@@ -201,8 +211,15 @@
         }
 
         #gameover-modal .gameover-content .boom-icon {
-            font-size: 64px;
             margin-bottom: 16px;
+        }
+
+        #gameover-modal .gameover-content .boom-icon img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
         }
 
         #gameover-modal .gameover-content h2 {
@@ -263,7 +280,7 @@
     </div>
     <div id="gameover-modal">
         <div class="gameover-content">
-            <div class="boom-icon">💥</div>
+            <div class="boom-icon"><img src="icon/boom.png" alt="爆炸图标" width="256" height="256"></div>
             <h2>游戏结束!</h2>
             <p>你抓到了炸弹...</p>
             <div class="final-score">最终得分: <span id="gameover-score">0</span></div>
@@ -281,11 +298,11 @@
 
         // 可抓取的物品 - 每个物品对应一个链接
         const LINK_ITEMS = [
-            { type: 'GitHub', label: 'GitHub', url: 'https://github.com/Zebra1111', iconSrc: 'icon/github.png', size: 50, value: 300, desc: '我的 GitHub 主页' },
+            { type: 'GitHub', label: 'GitHub', url: 'https://github.com/Zebra1111', iconSrc: 'icon/github.png', size: 40, value: 300, desc: '我的 GitHub 主页' },
             { type: 'Blog', label: '博客', url: 'blog.html', iconSrc: 'icon/blog.png', size: 40, value: 200, desc: '我的技术博客' },
-            { type: 'Project', label: '项目展示', url: 'https://github.com/Zebra1111?tab=repositories', iconSrc: 'icon/project.png', size: 35, value: 500, desc: '查看我的开源项目' },
-            { type: 'LeetCode', label: 'LeetCode', url: 'https://leetcode.cn/progress/', iconSrc: 'icon/leetcode.png', size: 30, value: 400, desc: '力扣刷题记录' },
-            { type: 'Acwing', label: 'Acwing', url: 'https://www.acwing.com/user/myspace/index/144768/', iconSrc: 'icon/acwing.png', size: 30, value: 400, desc: 'Acwing 刷题空间' },
+            { type: 'Project', label: '项目展示', url: 'https://github.com/Zebra1111?tab=repositories', iconSrc: 'icon/project.png', size: 40, value: 500, desc: '查看我的开源项目' },
+            { type: 'LeetCode', label: 'LeetCode', url: 'https://leetcode.cn/progress/', iconSrc: 'icon/leetcode.png', size: 40, value: 400, desc: '力扣刷题记录' },
+            { type: 'Acwing', label: 'Acwing', url: 'https://www.acwing.com/user/myspace/index/144768/', iconSrc: 'icon/acwing.png', size: 40, value: 400, desc: 'Acwing 刷题空间' },
         ];
 
         // 随机数量的黄金、石头、炸弹
@@ -318,7 +335,7 @@
             });
         }
         // 预加载所有 icon 图片
-        const imageSources = ['icon/gold.png', 'icon/silver.png', 'icon/stone.png', 'icon/bomb.png', 'icon/github.png', 'icon/blog.png', 'icon/project.png', 'icon/leetcode.png', 'icon/acwing.png'];
+        const imageSources = ['icon/gold.png', 'icon/silver.png', 'icon/stone.png', 'icon/bomb.png', 'icon/github.png', 'icon/blog.png', 'icon/project.png', 'icon/leetcode.png', 'icon/acwing.png', 'icon/bomb.png'];
         Promise.all(imageSources.map(preloadImage));
 
         // ============ 游戏状态 ============
@@ -607,7 +624,7 @@
                 ctx.font = `${item.size}px serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(item.icon, 0, 0);
+                ctx.fillText(item.iconSrc, 0, 0);
             }
 
             // 标签
@@ -780,7 +797,20 @@
         // ============ 链接弹窗 ============
         function showLinkModal(item) {
             const modal = document.getElementById('link-modal');
-            document.getElementById('modal-title').textContent = `${item.icon} ${item.label} (+$${item.value})`;
+            const modalTitle = document.getElementById('modal-title');
+            modalTitle.innerHTML = '';
+
+            if (item.iconSrc) {
+                const iconImg = document.createElement('img');
+                iconImg.src = item.iconSrc;
+                iconImg.alt = item.label;
+                modalTitle.appendChild(iconImg);
+            }
+
+            const titleText = document.createElement('span');
+            titleText.textContent = `${item.label} (+$${item.value})`;
+            modalTitle.appendChild(titleText);
+
             document.getElementById('modal-desc').textContent = item.desc;
 
             const openBtn = document.getElementById('modal-open');
