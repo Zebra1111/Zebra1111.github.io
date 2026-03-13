@@ -650,6 +650,21 @@
             color: rgba(255, 215, 0, 0.6);
         }
 
+        .post-card .pin-btn {
+            background: rgba(120, 190, 255, 0.16);
+            color: rgba(140, 205, 255, 0.85);
+        }
+
+        .post-card .pin-btn:hover {
+            background: rgba(120, 190, 255, 0.28);
+            color: #bfe6ff;
+        }
+
+        .post-card .pin-btn.pinned {
+            background: rgba(120, 190, 255, 0.35);
+            color: #d4efff;
+        }
+
         .post-card .edit-btn:hover {
             background: rgba(255, 215, 0, 0.3);
             color: #ffd700;
@@ -670,6 +685,12 @@
             background: rgba(255, 165, 0, 0.15) !important;
             color: rgba(255, 165, 0, 0.9) !important;
             border-color: rgba(255, 165, 0, 0.3) !important;
+        }
+
+        .pin-tag {
+            background: rgba(120, 190, 255, 0.18) !important;
+            color: #bfe6ff !important;
+            border-color: rgba(120, 190, 255, 0.35) !important;
         }
 
         /* 详情页编辑按钮 */
@@ -909,6 +930,26 @@
         .detail-delete-btn:hover {
             background: rgba(255, 60, 60, 0.2);
             border-color: #ff6464;
+        }
+
+        .detail-pin-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #bfe6ff;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 5px 12px;
+            border: 1px solid rgba(120, 190, 255, 0.35);
+            border-radius: 6px;
+            background: rgba(120, 190, 255, 0.12);
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .detail-pin-btn:hover {
+            background: rgba(120, 190, 255, 0.22);
+            border-color: rgba(170, 220, 255, 0.75);
         }
 
         /* ===== 响应式 ===== */
@@ -1445,7 +1486,7 @@
         }
 
         // 发布文章到 GitHub 仓库
-        async function publishToRepo(title, tag, summary, content, date, existingSlug = null) {
+        async function publishToRepo(title, tag, summary, content, date, existingSlug = null, pinned = false) {
             const token = getToken();
             if (!token) {
                 throw new Error('请先配置 GitHub Token');
@@ -1481,7 +1522,7 @@
 
             // 检查是否已有该 slug
             const existingIdx = indexArr.findIndex(item => item.slug === slug);
-            const newEntry = { slug, title, date, tag: tag || '未分类', summary: summary || title };
+            const newEntry = { slug, title, date, tag: tag || '未分类', summary: summary || title, pinned: !!pinned };
 
             if (existingIdx >= 0) {
                 indexArr[existingIdx] = newEntry;
@@ -1619,6 +1660,7 @@
                     title: item.title,
                     tag: item.tag || '未分类',
                     summary: item.summary || '',
+                    pinned: !!item.pinned,
                     date: item.date || '',
                     timestamp: new Date(item.date).getTime() || (Date.now() - i * 1000),
                     isPublished: true,
@@ -1742,18 +1784,23 @@
                 return;
             }
 
-            // 按时间倒序
-            const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
+            // 置顶优先 + 时间倒序
+            const sorted = [...filtered].sort((a, b) => {
+                if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+                return b.timestamp - a.timestamp;
+            });
 
             container.innerHTML = sorted.map(post => `
                 <div class="post-card" data-id="${post.id}">
                     ${isAuthenticated ? `<div class="card-actions">
+                        <button class="pin-btn ${post.pinned ? 'pinned' : ''}" data-pin="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}" title="${post.pinned ? '取消置顶' : '置顶'}">📌</button>
                         <button class="edit-btn" data-edit="${post.id}" title="${post.isPublished ? '在线编辑并同步仓库' : '编辑草稿'}">✎</button>
                         <button class="delete-btn" data-delete="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}" title="删除">✕</button>
                     </div>` : ''}
                     <div class="post-meta">
                         <span class="post-date">📅 ${post.date}</span>
                         ${post.tag ? `<span class="post-tag">${post.tag}</span>` : ''}
+                        ${post.pinned ? '<span class="post-tag pin-tag">📌 置顶</span>' : ''}
                         ${!post.isPublished ? '<span class="post-tag draft-tag">📝 本地草稿</span>' : ''}
                     </div>
                     <h2>${escapeHtml(post.title)}</h2>
@@ -1765,10 +1812,22 @@
             // 绑定点击事件
             container.querySelectorAll('.post-card').forEach(card => {
                 card.addEventListener('click', (e) => {
-                    if (e.target.closest('.delete-btn') || e.target.closest('.edit-btn')) return;
+                    if (e.target.closest('.delete-btn') || e.target.closest('.edit-btn') || e.target.closest('.pin-btn')) return;
                     const id = card.dataset.id;
                     // 草稿 id 是数字，已发布是字符串 'pub_xxx'
                     showDetail(isNaN(id) ? id : Number(id));
+                });
+            });
+
+            // 置顶按钮
+            container.querySelectorAll('.pin-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const rawId = btn.dataset.pin;
+                    const id = isNaN(rawId) ? rawId : Number(rawId);
+                    const authed = await requireAuth();
+                    if (!authed) return;
+                    await togglePin(id);
                 });
             });
 
@@ -1848,11 +1907,13 @@
                     <div class="back-to-list" id="backToList">← 返回列表</div>
                     <h1>${escapeHtml(post.title)}
                         ${isAuthenticated ? `<button class="detail-edit-btn" id="detailEditBtn" data-id="${post.id}" title="${post.isPublished ? '在线编辑并同步仓库' : '编辑草稿'}">✎ 编辑</button>` : ''}
+                        ${isAuthenticated ? `<button class="detail-pin-btn" id="detailPinBtn" data-id="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}">${post.pinned ? '📌 取消置顶' : '📌 置顶'}</button>` : ''}
                         ${isAuthenticated ? `<button class="detail-delete-btn" id="detailDeleteBtn" data-id="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}">🗑 删除</button>` : ''}
                     </h1>
                     <div class="meta-row">
                         <span>📅 ${post.date}</span>
                         ${post.tag ? `<span class="tag">${escapeHtml(post.tag)}</span>` : ''}
+                        ${post.pinned ? '<span class="tag pin-tag">📌 置顶</span>' : ''}
                         ${!post.isPublished ? '<span class="tag draft-tag">📝 本地草稿</span>' : ''}
                     </div>
                 </div>
@@ -1873,6 +1934,16 @@
                     const authed = await requireAuth();
                     if (!authed) return;
                     await openEditor(post.id);
+                });
+            }
+
+            const pinBtn = document.getElementById('detailPinBtn');
+            if (pinBtn) {
+                pinBtn.addEventListener('click', async () => {
+                    const authed = await requireAuth();
+                    if (!authed) return;
+                    await togglePin(post.id);
+                    await showDetail(post.id);
                 });
             }
 
@@ -1919,6 +1990,56 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        async function togglePin(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const nextPinned = !post.pinned;
+
+            if (post.isPublished) {
+                if (!getToken()) {
+                    alert('请先配置 GitHub Token（点击导航栏的 🔑 Token 按钮）');
+                    return;
+                }
+
+                const indexPath = 'posts/index.json';
+                const indexFile = await ghGetFile(indexPath);
+                if (!indexFile) {
+                    alert('❌ 未找到 posts/index.json');
+                    return;
+                }
+
+                const decoded = decodeURIComponent(escape(atob(indexFile.content.replace(/\n/g, ''))));
+                let indexArr = JSON.parse(decoded);
+                const idx = indexArr.findIndex(item => item.slug === post.slug);
+                if (idx < 0) {
+                    alert('❌ 索引中未找到该文章，无法置顶');
+                    return;
+                }
+
+                indexArr[idx].pinned = nextPinned;
+
+                await ghPutFile(
+                    indexPath,
+                    JSON.stringify(indexArr, null, 4) + '\n',
+                    `${nextPinned ? '📌 置顶文章' : '📍 取消置顶'}: ${post.title}`,
+                    indexFile.sha
+                );
+
+                const pub = publishedPosts.find(p => p.id === post.id);
+                if (pub) pub.pinned = nextPinned;
+            } else {
+                const draft = draftPosts.find(p => p.id === post.id);
+                if (!draft) return;
+                draft.pinned = nextPinned;
+                saveDrafts();
+            }
+
+            refreshPosts();
+            renderTags();
+            renderList();
         }
 
         // ============ 编辑器 ============
@@ -2012,6 +2133,7 @@
                     tag: tag || '未分类',
                     summary: summary || title,
                     content,
+                    pinned: false,
                     date,
                     timestamp: Date.now(),
                     isPublished: false
@@ -2046,7 +2168,9 @@
             try {
                 const editingPublished = editingContext && editingContext.type === 'published';
                 const targetSlug = editingPublished ? editingContext.slug : null;
-                const slug = await publishToRepo(title, tag, summary, content, date, targetSlug);
+                const editingPost = editingContext ? posts.find(p => p.id === editingContext.postId) : null;
+                const pinned = editingPost ? !!editingPost.pinned : false;
+                const slug = await publishToRepo(title, tag, summary, content, date, targetSlug, pinned);
 
                 // 如果是从草稿发布，删除对应草稿
                 if (editingContext && editingContext.type === 'draft') {
@@ -2063,6 +2187,7 @@
                     title: title,
                     tag: tag || '未分类',
                     summary: summary || title,
+                    pinned: pinned,
                     date: date,
                     timestamp: Date.now(),
                     isPublished: true,
