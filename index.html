@@ -334,6 +334,7 @@
             angle: 0,
             angleSpeed: 0.02,
             angleDir: 1,
+            maxSwingAngle: Math.PI / 2.5,
             ropeLen: 40,
             maxRopeLen: 0,
             state: 'swinging', // swinging | extending | retracting
@@ -358,7 +359,7 @@
             ctx.imageSmoothingQuality = 'high';
             miner.x = W / 2;
             miner.y = 90;
-            miner.maxRopeLen = H - 100;
+            miner.maxRopeLen = Math.hypot(W / 2 + 20, H - miner.y + 20);
         }
 
         function initStars() {
@@ -386,6 +387,16 @@
             const usedPositions = [];
             const currentConfig = generateItemsConfig();
 
+            function isReachable(x, y, size) {
+                const dx = x - miner.x;
+                const dy = y - miner.y;
+                if (dy <= 0) return false;
+                const dist = Math.hypot(dx, dy);
+                const angle = Math.atan2(dx, dy);
+                const reachPadding = size / 2 + 10;
+                return Math.abs(angle) <= miner.maxSwingAngle * 0.96 && dist <= miner.maxRopeLen - reachPadding;
+            }
+
             currentConfig.forEach(cfg => {
                 let x, y, attempts = 0;
                 do {
@@ -394,7 +405,12 @@
                     attempts++;
                 } while (attempts < 100 && usedPositions.some(p =>
                     Math.hypot(p.x - x, p.y - y) < 80
-                ));
+                ) || !isReachable(x, y, cfg.size));
+
+                if (!isReachable(x, y, cfg.size)) {
+                    x = miner.x + (Math.random() - 0.5) * W * 0.6;
+                    y = groundY + Math.random() * (H - groundY - margin * 1.2);
+                }
                 usedPositions.push({ x, y });
 
                 items.push({
@@ -674,8 +690,8 @@
             if (gameOver) return;
             if (miner.state === 'swinging') {
                 miner.angle += miner.angleSpeed * miner.angleDir;
-                if (miner.angle > Math.PI / 2.5) miner.angleDir = -1;
-                if (miner.angle < -Math.PI / 2.5) miner.angleDir = 1;
+                if (miner.angle > miner.maxSwingAngle) miner.angleDir = -1;
+                if (miner.angle < -miner.maxSwingAngle) miner.angleDir = 1;
                 miner.ropeLen = 40;
             }
             else if (miner.state === 'extending') {
