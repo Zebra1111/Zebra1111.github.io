@@ -1445,19 +1445,19 @@
         }
 
         // 发布文章到 GitHub 仓库
-        async function publishToRepo(title, tag, summary, content, date) {
+        async function publishToRepo(title, tag, summary, content, date, existingSlug = null) {
             const token = getToken();
             if (!token) {
                 throw new Error('请先配置 GitHub Token');
             }
 
-            const slug = titleToSlug(title);
+            const slug = existingSlug || titleToSlug(title);
             const mdPath = `posts/${slug}.md`;
             const indexPath = 'posts/index.json';
 
             // 1. 检查 MD 文件是否已存在
             const existingMd = await ghGetFile(mdPath);
-            if (existingMd) {
+            if (existingMd && !existingSlug) {
                 if (!confirm(`文件 ${slug}.md 已存在，是否覆盖？`)) {
                     throw new Error('用户取消');
                 }
@@ -1748,7 +1748,7 @@
             container.innerHTML = sorted.map(post => `
                 <div class="post-card" data-id="${post.id}">
                     ${isAuthenticated ? `<div class="card-actions">
-                        ${!post.isPublished ? `<button class="edit-btn" data-edit="${post.id}" title="编辑草稿">✎</button>` : ''}
+                        <button class="edit-btn" data-edit="${post.id}" title="${post.isPublished ? '在线编辑并同步仓库' : '编辑草稿'}">✎</button>
                         <button class="delete-btn" data-delete="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}" title="删除">✕</button>
                     </div>` : ''}
                     <div class="post-meta">
@@ -1776,10 +1776,11 @@
             container.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const id = Number(btn.dataset.edit);
+                    const rawId = btn.dataset.edit;
+                    const id = isNaN(rawId) ? rawId : Number(rawId);
                     const authed = await requireAuth();
                     if (!authed) return;
-                    openEditor(id);
+                    await openEditor(id);
                 });
             });
 
@@ -1846,7 +1847,7 @@
                 <div class="detail-header">
                     <div class="back-to-list" id="backToList">← 返回列表</div>
                     <h1>${escapeHtml(post.title)}
-                        ${isAuthenticated && !post.isPublished ? `<button class="detail-edit-btn" id="detailEditBtn" data-id="${post.id}">✎ 编辑</button>` : ''}
+                        ${isAuthenticated ? `<button class="detail-edit-btn" id="detailEditBtn" data-id="${post.id}" title="${post.isPublished ? '在线编辑并同步仓库' : '编辑草稿'}">✎ 编辑</button>` : ''}
                         ${isAuthenticated ? `<button class="detail-delete-btn" id="detailDeleteBtn" data-id="${post.id}" data-published="${post.isPublished ? 1 : 0}" data-slug="${post.slug || ''}">🗑 删除</button>` : ''}
                     </h1>
                     <div class="meta-row">
@@ -1871,7 +1872,7 @@
                 editBtn.addEventListener('click', async () => {
                     const authed = await requireAuth();
                     if (!authed) return;
-                    openEditor(post.id);
+                    await openEditor(post.id);
                 });
             }
 
@@ -1927,23 +1928,36 @@
         const editorSaveDraft = document.getElementById('editorSaveDraft');
         const editorPublishRepo = document.getElementById('editorPublishRepo');
         const editorHeading = document.getElementById('editorHeading');
-        let editingPostId = null; // null=新建, 有值=编辑
+        let editingContext = null; // null=新建, {type:'draft'|'published', postId, slug}
 
-        function openEditor(postId) {
-            if (postId) {
-                // 编辑模式（仅草稿可编辑）
-                const post = draftPosts.find(p => p.id === postId);
+        async function openEditor(postId) {
+            if (postId !== null && postId !== undefined) {
+                const post = posts.find(p => p.id === postId);
                 if (!post) return;
-                editingPostId = postId;
-                editorHeading.textContent = '✏️ 编辑草稿';
-                document.getElementById('editorTitle').value = post.title;
-                document.getElementById('editorTag').value = post.tag || '';
-                document.getElementById('editorSummary').value = post.summary || '';
-                document.getElementById('editorContent').value = post.content || '';
+
+                if (post.isPublished) {
+                    editingContext = { type: 'published', postId: post.id, slug: post.slug };
+                    editorHeading.textContent = '✏️ 在线编辑已发布文章';
+                    editorSaveDraft.style.display = 'none';
+                    const content = await loadPostContent(post);
+                    document.getElementById('editorTitle').value = post.title;
+                    document.getElementById('editorTag').value = post.tag || '';
+                    document.getElementById('editorSummary').value = post.summary || '';
+                    document.getElementById('editorContent').value = content || '';
+                } else {
+                    editingContext = { type: 'draft', postId: post.id, slug: null };
+                    editorHeading.textContent = '✏️ 编辑草稿';
+                    editorSaveDraft.style.display = '';
+                    document.getElementById('editorTitle').value = post.title;
+                    document.getElementById('editorTag').value = post.tag || '';
+                    document.getElementById('editorSummary').value = post.summary || '';
+                    document.getElementById('editorContent').value = post.content || '';
+                }
             } else {
                 // 新建模式
-                editingPostId = null;
+                editingContext = null;
                 editorHeading.textContent = '✍️ 写文章';
+                editorSaveDraft.style.display = '';
                 document.getElementById('editorTitle').value = '';
                 document.getElementById('editorTag').value = '';
                 document.getElementById('editorSummary').value = '';
@@ -1956,7 +1970,7 @@
         writeBtn.addEventListener('click', async () => {
             const authed = await requireAuth();
             if (!authed) return;
-            openEditor(null);
+            await openEditor(null);
         });
 
         editorCancel.addEventListener('click', () => {
@@ -1981,8 +1995,8 @@
             if (!title) { alert('请输入文章标题'); return; }
             if (!content) { alert('请输入文章内容'); return; }
 
-            if (editingPostId) {
-                const post = draftPosts.find(p => p.id === editingPostId);
+            if (editingContext && editingContext.type === 'draft') {
+                const post = draftPosts.find(p => p.id === editingContext.postId);
                 if (post) {
                     post.title = title;
                     post.tag = tag || '未分类';
@@ -2007,7 +2021,7 @@
             }
 
             editorModal.classList.remove('visible');
-            editingPostId = null;
+            editingContext = null;
             currentFilter = 'all';
             refreshPosts();
             renderTags();
@@ -2030,11 +2044,13 @@
             editorPublishRepo.textContent = '⏳ 发布中...';
 
             try {
-                const slug = await publishToRepo(title, tag, summary, content, date);
+                const editingPublished = editingContext && editingContext.type === 'published';
+                const targetSlug = editingPublished ? editingContext.slug : null;
+                const slug = await publishToRepo(title, tag, summary, content, date, targetSlug);
 
                 // 如果是从草稿发布，删除对应草稿
-                if (editingPostId) {
-                    draftPosts = draftPosts.filter(p => p.id !== editingPostId);
+                if (editingContext && editingContext.type === 'draft') {
+                    draftPosts = draftPosts.filter(p => p.id !== editingContext.postId);
                     saveDrafts();
                 }
 
@@ -2059,9 +2075,9 @@
                 }
 
                 editorModal.classList.remove('visible');
-                editingPostId = null;
+                editingContext = null;
 
-                alert(`✅ 文章已发布到仓库！\n\n文件: posts/${slug}.md\nGitHub Pages 会在几分钟内自动更新。`);
+                alert(`✅ 文章已同步到仓库！\n\n文件: posts/${slug}.md\nGitHub Pages 会在几分钟内自动更新。`);
 
                 currentFilter = 'all';
                 refreshPosts();

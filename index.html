@@ -24,6 +24,7 @@
         #gameCanvas {
             display: block;
             margin: 0 auto;
+            image-rendering: auto;
         }
 
         #tooltip {
@@ -345,8 +346,16 @@
 
         // ============ 初始化 ============
         function resize() {
-            W = canvas.width = window.innerWidth;
-            H = canvas.height = window.innerHeight;
+            const dpr = Math.max(1, window.devicePixelRatio || 1);
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = Math.floor(W * dpr);
+            canvas.height = Math.floor(H * dpr);
+            canvas.style.width = W + 'px';
+            canvas.style.height = H + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             miner.x = W / 2;
             miner.y = 90;
             miner.maxRopeLen = H - 100;
