@@ -2130,14 +2130,8 @@
                 <div class="article-content">
                     ${renderMarkdown(content || '')}
                 </div>
-                <button class="floating-back-btn" id="backToListFloating">← 返回Blog</button>
+                <button class="floating-back-btn" id="backToListFloating">← 返回列表</button>
             `;
-
-            document.getElementById('backToList').addEventListener('click', () => {
-                renderList();
-                renderTags();
-                window.scrollTo(0, 0);
-            });
 
             document.getElementById('backToListFloating').addEventListener('click', () => {
                 renderList();
